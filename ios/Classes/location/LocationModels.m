@@ -2,8 +2,12 @@
 // Created by Yohom Bao on 2018-12-15.
 //
 
-#import "AMapLocationManager.h"
+#import <AMapLocationKit/AMapLocationManager.h>
 #import "LocationModels.h"
+
+@interface AMapLocationManager (FlutterAmapBaseCompat)
+- (void)setReGeocodeLanguage:(NSInteger)language;
+@end
 
 
 @implementation UnifiedAMapLocation {
@@ -81,7 +85,9 @@
     locationManager.locationTimeout = _locationTimeout;
     locationManager.reGeocodeTimeout = _reGeocodeTimeout;
     locationManager.locatingWithReGeocode = _locatingWithReGeocode;
-    locationManager.reGeocodeLanguage = _geoLanguage;
+    if ([locationManager respondsToSelector:@selector(setReGeocodeLanguage:)]) {
+        [locationManager setReGeocodeLanguage:_geoLanguage];
+    }
     locationManager.detectRiskOfFakeLocation = _detectRiskOfFakeLocation;
 }
 

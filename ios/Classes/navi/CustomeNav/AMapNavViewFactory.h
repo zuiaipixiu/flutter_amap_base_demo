@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <Flutter/Flutter.h>
-#import "MAMapKit.h"
+#import <AMapNaviKit/MAMapKit.h>
 #import <AMapNaviKit/AMapNaviKit.h>
 
 

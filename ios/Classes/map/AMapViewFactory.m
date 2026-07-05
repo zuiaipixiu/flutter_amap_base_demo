@@ -3,7 +3,7 @@
 //
 
 #import "AMapViewFactory.h"
-#import "MAMapView.h"
+#import <AMapNaviKit/MAMapView.h>
 #import "MapModels.h"
 #import "AMapBasePlugin.h"
 #import "UnifiedAssets.h"

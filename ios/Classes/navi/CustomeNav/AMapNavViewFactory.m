@@ -6,7 +6,7 @@
 //
 
 #import "AMapNavViewFactory.h"
-#import "MAMapView.h"
+#import <AMapNaviKit/MAMapView.h>
 #import "MapNavModels.h"
 #import "AMapBasePlugin.h"
 #import "UnifiedAssets.h"
@@ -63,7 +63,7 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 
 @property (nonatomic, strong) UIImageView *crossImageView;
 @property (nonatomic, strong) UIButton *rightBrowserBtn;
-@property (nonatomic, strong) AMapNaviTrafficBarView *trafficBarView;
+@property (nonatomic, strong) UIView *trafficBarView;
 @property (nonatomic, strong) UIButton *rightTrafficBtn;
 
 @property (nonatomic, strong) FlutterMethodChannel *methodChannel;
@@ -100,9 +100,13 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 }
 
 
-- (AMapNaviTrafficBarView *)trafficBarView {
+- (UIView *)trafficBarView {
     if (!_trafficBarView) {
-        _trafficBarView = [[AMapNaviTrafficBarView alloc] initWithFrame:CGRectZero];
+        // Newer AMapNavi iOS SDKs no longer expose the legacy traffic bar view.
+        // Keep a lightweight placeholder view so the rest of the custom layout
+        // and show/hide logic can continue to work without build-time SDK coupling.
+        _trafficBarView = [[UIView alloc] initWithFrame:CGRectZero];
+        _trafficBarView.hidden = YES;
     }
     return _trafficBarView;
 }
@@ -166,9 +170,9 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
         [[AMapNaviDriveManager sharedInstance] setAllowsBackgroundLocationUpdates:YES];
         [[AMapNaviDriveManager sharedInstance] setPausesLocationUpdatesAutomatically:NO];
         
-        //将self 、driveView、trafficBarView 添加为导航数据的Representative，使其可以接收到导航诱导数据
+        // 将 self、driveView 添加为导航数据的 Representative。
+        // iOS 新版 SDK 已不再提供旧 traffic bar view，这里降级跳过该能力。
         [[AMapNaviDriveManager sharedInstance] addDataRepresentative:self.driveView];
-        [[AMapNaviDriveManager sharedInstance] addDataRepresentative:self.trafficBarView];
         [[AMapNaviDriveManager sharedInstance] addDataRepresentative:self];
         
          self.driveView.delegate = self;

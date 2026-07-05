@@ -52,7 +52,7 @@ class AMap {
   static Map<String, List<String>>? assetManifest;
 
   static Future init(String key) async {
-    _channel.invokeMethod('setKey', {'key': key});
+    await _channel.invokeMethod('setKey', {'key': key});
 
     // 加载asset相关信息, 供区分图片分辨率用, 因为native端的加载asset方法无法区分分辨率, 这是一个变通方法
     assetManifest = await rootBundle.loadStructuredData<Map<String, List<String>>>(
@@ -69,8 +69,6 @@ class AMap {
         return SynchronousFuture<Map<String, List<String>>>(parsedManifest);
       },
     );
-
-    await AMapLocation().init();
   }
 
   @Deprecated('使用init方法初始化的时候设置key')

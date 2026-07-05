@@ -4,7 +4,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
-#import "AMapLocationCommonObj.h"
+#import <AMapLocationKit/AMapLocationCommonObj.h>
 
 
 @class CLLocation;
@@ -63,8 +63,8 @@
 /// 定位模式 默认值：Hight_Accuracy 高精度模式
 @property(nonatomic) NSInteger locationMode;
 
-/// 逆地理信息的语言,目前之中中文和英文
-@property(nonatomic) AMapLocationReGeocodeLanguage geoLanguage;
+/// 逆地理信息的语言, 兼容不同版本 AMapLocation SDK
+@property(nonatomic) NSInteger geoLanguage;
 
 ///设定定位的最小更新距离。单位米，默认为 kCLDistanceFilterNone，表示只要检测到设备位置发生变化就会更新位置信息。
 @property(nonatomic, assign) CLLocationDistance distanceFilter;

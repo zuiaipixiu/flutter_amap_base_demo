@@ -4,7 +4,7 @@
 
 #import <Foundation/Foundation.h>
 #import "IMethodHandler.h"
-#import "AMapSearchAPI.h"
+#import <AMapSearchKit/AMapSearchAPI.h>
 
 
 

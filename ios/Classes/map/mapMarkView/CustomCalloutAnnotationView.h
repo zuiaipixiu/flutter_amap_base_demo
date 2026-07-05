@@ -5,7 +5,7 @@
 //  Created by tengfei on 2020/3/3.
 //
 
-#import "MAMapKit.h"
+#import <AMapNaviKit/MAMapKit.h>
 #import "NormalTextCalloutView.h"
 #import "OutLineLabel.h"
 

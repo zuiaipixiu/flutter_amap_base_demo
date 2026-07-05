@@ -3,9 +3,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MAPointAnnotation.h"
-#import "MAPolyline.h"
-#import "MACircle.h"
+#import <AMapNaviKit/MAPointAnnotation.h>
+#import <AMapNaviKit/MAPolyline.h>
+#import <AMapNaviKit/MACircle.h>
 
 @class UnifiedMarkerOptions;
 @class LatLng;

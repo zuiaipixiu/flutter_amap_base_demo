@@ -9,10 +9,10 @@
 
 #import "CommonDefine.h"
 
-#import "AMapFoundationKit.h"
+#import <AMapFoundationKit/AMapFoundationKit.h>
 
-#import "AMapSearchKit.h"
-#import "AMapNaviKit.h"
+#import <AMapSearchKit/AMapSearchKit.h>
+#import <AMapNaviKit/AMapNaviKit.h>
 
 
 

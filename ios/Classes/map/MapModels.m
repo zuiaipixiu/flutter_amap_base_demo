@@ -2,7 +2,7 @@
 // Created by Yohom Bao on 2018-12-15.
 //
 
-#import "MAMapView.h"
+#import <AMapNaviKit/MAMapView.h>
 #import "MapModels.h"
 #import "NSString+Color.h"
 #import "MJExtension.h"

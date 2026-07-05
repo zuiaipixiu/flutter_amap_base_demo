@@ -86,10 +86,12 @@ String? toResolutionAware(String assetName) {
     return _findNearest(mapping, config.devicePixelRatio!);
   }
 
+  final List<String> candidates =
+      AMap.assetManifest == null ? <String>[] : (AMap.assetManifest![assetName] ?? <String>[]);
   final String? chosenName = _chooseVariant(
     assetName,
     ImageConfiguration(devicePixelRatio: devicePixelRatio),
-    (AMap.assetManifest == null ? null : AMap.assetManifest![assetName]) as List<String>,
+    candidates,
   );
   L.p('设备devicePixelRatio: $devicePixelRatio, 选中的图片: $chosenName');
   return chosenName;

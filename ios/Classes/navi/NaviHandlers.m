@@ -3,9 +3,9 @@
 //
 
 #import "NaviHandlers.h"
-#import "AMapNaviCompositeManager.h"
-#import "AMapNaviCompositeUserConfig.h"
-#import "AMapServices.h"
+#import <AMapNaviKit/AMapNaviCompositeManager.h>
+#import <AMapNaviKit/AMapNaviCompositeUserConfig.h>
+#import <AMapFoundationKit/AMapServices.h>
 #import "CommonDefine.h"
 
 
