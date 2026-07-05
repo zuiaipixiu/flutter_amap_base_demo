@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    xmlns:tools="http://schemas.android.com/tools"
+   >
+
+    <LinearLayout
+        android:id="@+id/marker_all"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_centerInParent="true"
+        >
+          <TextView
+                android:id="@+id/pop_tv"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bubble_white_bg"
+                android:gravity="center"
+                android:elevation="10dp"
+                android:lineSpacingExtra="3dp"
+                android:paddingLeft="12dp"
+                android:paddingTop="6dp"
+                android:paddingRight="12dp"
+                android:paddingBottom="10dp"
+                android:textColor="#4d4d4d"
+                android:layout_centerInParent="true"
+                android:textSize="14sp" />
+
+        <ImageView
+            android:id="@+id/marker_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+
+        <LinearLayout
+            android:id="@+id/ll_address_label"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="156dp"
+            >
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/green_dot"
+                android:layout_marginTop="6dp"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+
+
+
+    <TextView
+        android:layout_alignBottom="@+id/marker_all"
+         android:paddingLeft="164dp"
+        android:id="@+id/tv_address"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        tools:text="杭州市 滨江区 西陵路 海威大厦"
+        android:singleLine="true"
+        android:maxEms="24"
+        android:textSize="12sp"
+        android:textColor="@color/blackTf"
+        android:layout_marginLeft="8dp"
+        />
+
+</RelativeLayout>

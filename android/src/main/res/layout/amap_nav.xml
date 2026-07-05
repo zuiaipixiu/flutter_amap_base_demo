@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue"
+    android:orientation="horizontal"
+    >
+
+    <com.amap.api.navi.AMapNaviView
+        android:id="@+id/navi_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        />
+
+    <LinearLayout
+        android:id="@+id/lltop"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/map_top_black_bg"
+        android:orientation="vertical"
+        android:layout_marginBottom="0dp"
+        >
+        <RelativeLayout
+            android:layout_height="100dp"
+            android:layout_width="match_parent">
+
+            <com.amap.api.navi.view.NextTurnTipView
+                android:id="@+id/myNextTurnView"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginLeft="20dp"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                ></com.amap.api.navi.view.NextTurnTipView>
+            <TextView
+                android:id="@+id/tvNextDistense"
+                android:layout_toRightOf="@+id/myNextTurnView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text=""
+                android:textSize="28sp"
+                android:textFontWeight="600"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="20dp"
+                >
+
+            </TextView>
+            <TextView
+                android:id="@+id/tvNextDistenseUnit"
+                android:layout_toRightOf="@+id/tvNextDistense"
+                android:layout_alignBaseline="@+id/tvNextDistense"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text=""
+                android:textSize="18sp"
+                android:layout_marginLeft="3dp"
+                android:textFontWeight="600"
+                >
+
+            </TextView>
+
+            <TextView
+                android:layout_toRightOf="@+id/tvNextDistenseUnit"
+                android:layout_alignBaseline="@+id/tvNextDistense"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gary"
+                android:text="进入"
+                android:textSize="18sp"
+                android:layout_marginTop="22dp"
+                android:layout_marginLeft="10dp"
+                >
+
+            </TextView>
+
+            <TextView
+                android:id="@+id/tvNextRoad"
+                android:layout_toRightOf="@+id/myNextTurnView"
+                android:layout_below="@+id/tvNextDistense"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text=""
+                android:textSize="18sp"
+                android:textFontWeight="600"
+                android:layout_marginTop="6dp"
+                android:layout_marginLeft="20dp"
+                >
+
+            </TextView>
+
+
+
+        </RelativeLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gary"
+            ></View>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            >
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="距离"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    ></TextView>
+                <TextView
+                    android:id="@+id/tvDistense"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:layout_marginLeft="8dp"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    ></TextView>
+
+
+            </LinearLayout>
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/gary"
+                >
+
+            </View>
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="需要"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    ></TextView>
+                <TextView
+                    android:id="@+id/tvTimeleave"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:layout_marginLeft="8dp"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    ></TextView>
+
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+<!--    <com.amap.api.navi.view.TrafficProgressBar-->
+<!--        android:id="@+id/myTrafficBar"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="300dp"-->
+<!--        android:layout_centerVertical="true" />-->
+
+
+    <com.amap.api.navi.view.TrafficProgressBar
+        android:id="@+id/myTrafficBar"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_below="@+id/lltop"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="-40dp"
+        android:layout_marginTop="10dp"
+       />
+
+    <LinearLayout
+        android:layout_below="@+id/lltop"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="-40dp"
+        android:id="@+id/myllZoomInIntersectionView"
+        android:background="@color/blackTf"
+        android:paddingBottom="20dp"
+        android:visibility="gone"
+        >
+
+        <com.amap.api.navi.view.ZoomInIntersectionView
+            android:id="@+id/myZoomInIntersectionView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+
+
+
+            android:visibility="visible"
+
+            />
+
+    </LinearLayout>
+
+
+
+
+
+
+</RelativeLayout>

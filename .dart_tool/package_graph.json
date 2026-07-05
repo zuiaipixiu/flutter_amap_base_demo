@@ -1,0 +1,131 @@
+{
+  "roots": [
+    "flutter_amap_base"
+  ],
+  "packages": [
+    {
+      "name": "flutter_amap_base",
+      "version": "1.0.7",
+      "dependencies": [
+        "device_info_plus",
+        "flutter"
+      ],
+      "devDependencies": []
+    },
+    {
+      "name": "device_info_plus",
+      "version": "9.1.2",
+      "dependencies": [
+        "device_info_plus_platform_interface",
+        "ffi",
+        "file",
+        "flutter",
+        "flutter_web_plugins",
+        "meta",
+        "win32",
+        "win32_registry"
+      ]
+    },
+    {
+      "name": "flutter",
+      "version": "0.0.0",
+      "dependencies": [
+        "characters",
+        "collection",
+        "material_color_utilities",
+        "meta",
+        "sky_engine",
+        "vector_math"
+      ]
+    },
+    {
+      "name": "win32_registry",
+      "version": "1.1.5",
+      "dependencies": [
+        "ffi",
+        "win32"
+      ]
+    },
+    {
+      "name": "win32",
+      "version": "5.15.0",
+      "dependencies": [
+        "ffi"
+      ]
+    },
+    {
+      "name": "meta",
+      "version": "1.17.0",
+      "dependencies": []
+    },
+    {
+      "name": "flutter_web_plugins",
+      "version": "0.0.0",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "file",
+      "version": "7.0.1",
+      "dependencies": [
+        "meta",
+        "path"
+      ]
+    },
+    {
+      "name": "ffi",
+      "version": "2.2.0",
+      "dependencies": []
+    },
+    {
+      "name": "device_info_plus_platform_interface",
+      "version": "7.0.3",
+      "dependencies": [
+        "flutter",
+        "meta",
+        "plugin_platform_interface"
+      ]
+    },
+    {
+      "name": "sky_engine",
+      "version": "0.0.0",
+      "dependencies": []
+    },
+    {
+      "name": "vector_math",
+      "version": "2.2.0",
+      "dependencies": []
+    },
+    {
+      "name": "material_color_utilities",
+      "version": "0.11.1",
+      "dependencies": [
+        "collection"
+      ]
+    },
+    {
+      "name": "collection",
+      "version": "1.19.1",
+      "dependencies": []
+    },
+    {
+      "name": "characters",
+      "version": "1.4.0",
+      "dependencies": []
+    },
+    {
+      "name": "path",
+      "version": "1.9.1",
+      "dependencies": []
+    },
+    {
+      "name": "plugin_platform_interface",
+      "version": "2.1.8",
+      "dependencies": [
+        "meta"
+      ]
+    }
+  ],
+  "configVersion": 1
+}

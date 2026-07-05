@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="12dp"
+        android:height="12dp"
+        android:gravity="center_horizontal|bottom"
+        >
+        <rotate
+            android:fromDegrees="45"
+            android:pivotX="75%"
+            android:pivotY="40%">
+            <shape>
+                <solid android:color="@color/white" />
+                <stroke
+                    android:color="@color/semitrans_gray"
+                    android:width="1px"/>
+            </shape>
+        </rotate>
+    </item>
+
+    <item
+        android:bottom="6dp"
+        >
+        <shape xmlns:android="http://schemas.android.com/apk/res/android"
+            android:shape="rectangle">
+            <corners
+                android:radius="18dp" />
+            <solid android:color="@color/white" />
+            <stroke android:color="@color/semitrans_gray"
+                android:width="1px"/>
+        </shape>
+    </item>
+
+<!--    only for cover the boarder of bubble and the pin to cover the stroke on the borader-->
+    <item
+        android:width="12dp"
+        android:height="12dp"
+        android:gravity="center_horizontal|bottom"
+        android:bottom="1px"
+        >
+        <rotate
+            android:fromDegrees="45"
+            android:pivotX="75%"
+            android:pivotY="40%">
+            <shape>
+                <solid android:color="@color/white" />
+            </shape>
+        </rotate>
+    </item>
+
+
+</layer-list>
