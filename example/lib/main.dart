@@ -39,7 +39,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   static const String _destinationName = '张贵庄地铁站';
   static const String _destinationCity = '天津';
   static const String _destinationPinIcon = 'images/destination_pin.png';
-  static const String _iosAmapKey = '';
+  static const String _iosAmapKey = 'a6ea7fe36f8f7e55d5331d68d84f6351';
 
   static const double _bottomCardHeight = 220;
   static const double _routeSelectorHeight = 76;
