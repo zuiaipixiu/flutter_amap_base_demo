@@ -27,28 +27,36 @@ object Init : LocationMethodHandler, ServiceConnection {
     lateinit var locationClient: AMapLocationClient
 
     private var locationEventChannel: EventChannel? = null
-    private var eventSink: EventChannel.EventSink? = null
+    var eventSink: EventChannel.EventSink? = null
+        private set
 
-    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        locationEventChannel = EventChannel(registrar.messenger(), "me.yohom/location_event")
+    fun registerEventChannel(messenger: io.flutter.plugin.common.BinaryMessenger) {
+        if (locationEventChannel != null) {
+            return
+        }
+        locationEventChannel = EventChannel(messenger, "me.yohom/location_event")
         locationEventChannel?.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(p0: Any?, sink: EventChannel.EventSink?) {
                 eventSink = sink
             }
 
             override fun onCancel(p0: Any?) {
-
+                eventSink = null
             }
         })
+    }
 
-        Log.d("dsm_flutter", "----------location client init ")
-        locationClient = AMapLocationClient(registrar.activity()?.applicationContext).apply {
-            setLocationListener {
-                eventSink?.success(UnifiedAMapLocation(it).toFieldJson())
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        registerEventChannel(registrar.messenger())
+
+        if (!::locationClient.isInitialized) {
+            Log.d("dsm_flutter", "----------location client init ")
+            locationClient = AMapLocationClient(registrar.activity()?.applicationContext).apply {
+                setLocationListener {
+                    eventSink?.success(UnifiedAMapLocation(it).toFieldJson())
+                }
             }
         }
-
-        locationClient.enableBackgroundLocation(NotifyUtils.NOTIFY_ID, NotifyUtils.buildNotification(registrar.activity()?.applicationContext))
 
         //deprecated service
 //        registrar.activity().bindService(Intent(registrar.activity(), LocationService::class.java), this, BIND_AUTO_CREATE)
@@ -82,9 +90,25 @@ object StartLocate : LocationMethodHandler {
         val optionJson = call.argument<String>("options") ?: "{}"
 
         log("startLocate android端: options.toJsonString() -> $optionJson")
-        locationClient.setLocationOption(optionJson.parseFieldJson<UnifiedLocationClientOptions>().toLocationClientOptions())
-        locationClient.startLocation()
-        result.success("开始定位")
+        val clientOptions = optionJson.parseFieldJson<UnifiedLocationClientOptions>().toLocationClientOptions()
+        locationClient.setLocationOption(clientOptions)
+
+        if (clientOptions.isOnceLocation) {
+            var replied = false
+            locationClient.setLocationListener { location ->
+                val json = UnifiedAMapLocation(location).toFieldJson()
+                Init.eventSink?.success(json)
+                if (!replied) {
+                    replied = true
+                    result.success(json)
+                    locationClient.stopLocation()
+                }
+            }
+            locationClient.startLocation()
+        } else {
+            locationClient.startLocation()
+            result.success("开始定位")
+        }
 
         //deprecated service
 //        mLocationService?.startLocate(optionJson.parseFieldJson<UnifiedLocationClientOptions>().toLocationClientOptions())

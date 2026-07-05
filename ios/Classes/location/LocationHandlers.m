@@ -3,12 +3,36 @@
 //
 
 #import "LocationHandlers.h"
+#import "LocationPermissionHelper.h"
 #import "MJExtension.h"
 #import "AMapBasePlugin.h"
 #import "LocationModels.h"
 #import "CommonDefine.h"
 
 static AMapLocationManager *_locationManager;
+static FlutterEventSink _locationEventSink;
+static StartLocate *_locationStreamHandler;
+
+static AMapLocationManager *LocationManagerInstance(void) {
+    if (_locationManager == nil) {
+        _locationManager = [[AMapLocationManager alloc] init];
+        _locationManager.distanceFilter = 1;
+        _locationManager.locationTimeout = 10;
+        _locationManager.reGeocodeTimeout = 10;
+    }
+    return _locationManager;
+}
+
+void RegisterLocationEventChannel(NSObject<FlutterPluginRegistrar> *registrar) {
+    if (_locationStreamHandler != nil) {
+        return;
+    }
+    _locationStreamHandler = [StartLocate new];
+    FlutterEventChannel *locationEventChannel = [FlutterEventChannel
+            eventChannelWithName:@"me.yohom/location_event"
+                 binaryMessenger:[registrar messenger]];
+    [locationEventChannel setStreamHandler:_locationStreamHandler];
+}
 
 @implementation Init {
 }
@@ -16,9 +40,7 @@ static AMapLocationManager *_locationManager;
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _locationManager = [[AMapLocationManager alloc] init];
-        _locationManager.distanceFilter = 1;
-        _locationManager.locationTimeout = 2;
+        LocationManagerInstance();
     }
 
     return self;
@@ -34,19 +56,10 @@ static AMapLocationManager *_locationManager;
 
 #pragma 开始定位
 
-@implementation StartLocate {
-    FlutterEventChannel *_locationEventChannel;
-    FlutterEventSink _sink;
-}
+@implementation StartLocate
 
 - (instancetype)init {
     self = [super init];
-    if (self) {
-        _locationEventChannel = [FlutterEventChannel eventChannelWithName:@"me.yohom/location_event"
-                                                          binaryMessenger:[[AMapBasePlugin registrar] messenger]];
-        [_locationEventChannel setStreamHandler:self];
-    }
-
     return self;
 }
 
@@ -58,51 +71,56 @@ static AMapLocationManager *_locationManager;
     DLog(@"startLocate ios端: options.toJsonString() -> %@", optionJson);
 
     UnifiedLocationClientOptions *options = [UnifiedLocationClientOptions mj_objectWithKeyValues:optionJson];
+    AMapLocationManager *locationManager = LocationManagerInstance();
 
-    _locationManager.delegate = self;
+    locationManager.delegate = self;
 
-    [options applyTo:_locationManager];
+    [options applyTo:locationManager];
 
     if (options.isOnceLocation) {
-        [_locationManager requestLocationWithReGeocode:YES
-                                       completionBlock:^(CLLocation *location, AMapLocationReGeocode *regeocode, NSError *error) {
-                                           if (error) {
-                                               result([FlutterError errorWithCode:[NSString stringWithFormat:@"%d", error.code]
-                                                                          message:error.localizedDescription
-                                                                          details:error.localizedDescription]);
-                                           } else {
-                                               result(@"开始定位");
-                                           }
-
-            self->_sink([[[UnifiedAMapLocation alloc] initWithLocation:location
-                                                                                  withRegoecode:regeocode
-                                                                                      withError:error] mj_JSONString]);
-                                       }];
+        [locationManager requestLocationWithReGeocode:YES
+                                      completionBlock:^(CLLocation *location, AMapLocationReGeocode *regeocode, NSError *error) {
+            NSString *json = [[[UnifiedAMapLocation alloc] initWithLocation:location
+                                                             withRegoecode:regeocode
+                                                                 withError:error] mj_JSONString];
+            if (_locationEventSink) {
+                _locationEventSink(json);
+            }
+            if (error) {
+                result([FlutterError errorWithCode:[NSString stringWithFormat:@"%ld", (long)error.code]
+                                           message:error.localizedDescription
+                                           details:error.localizedDescription]);
+            } else {
+                result(json);
+            }
+        }];
     } else {
-        [_locationManager startUpdatingLocation];
+        [locationManager startUpdatingLocation];
+        result(@"开始定位");
     }
 
 }
 
 - (void)amapLocationManager:(AMapLocationManager *)manager doRequireLocationAuth:(CLLocationManager *)locationManager {
-        [locationManager requestAlwaysAuthorization];
+    [LocationPermissionHelper requestWhenInUseIfNeeded:locationManager];
 }
 
 - (void)amapLocationManager:(AMapLocationManager *)manager didUpdateLocation:(CLLocation *)location reGeocode:(AMapLocationReGeocode *)reGeocode {
     DLog(@"location:{lat:%f; lon:%f; accuracy:%f, time:%@, timeStamap:%lld}", location.coordinate.latitude, location.coordinate.longitude, location.horizontalAccuracy,location.timestamp, [self getDateTimeTOMilliSeconds:location.timestamp]);
-    if (_sink) {
-        _sink([[[UnifiedAMapLocation alloc] initWithLocation:location
-                                               withRegoecode:reGeocode
-                                                   withError:nil] mj_JSONString]);
+    if (_locationEventSink) {
+        _locationEventSink([[[UnifiedAMapLocation alloc] initWithLocation:location
+                                                           withRegoecode:reGeocode
+                                                               withError:nil] mj_JSONString]);
     }
 }
 
 - (FlutterError *_Nullable)onListenWithArguments:(id _Nullable)arguments eventSink:(FlutterEventSink)events {
-    _sink = events;
+    _locationEventSink = events;
     return nil;
 }
 
 - (FlutterError *_Nullable)onCancelWithArguments:(id _Nullable)arguments {
+    _locationEventSink = nil;
     return nil;
 }
 
@@ -123,7 +141,8 @@ static AMapLocationManager *_locationManager;
 
 }
 - (void)onMethodCall:(FlutterMethodCall *)call :(FlutterResult)result {
-    [_locationManager stopUpdatingLocation];
+    [LocationManagerInstance() stopUpdatingLocation];
+    result(@"停止定位");
 }
 
 @end

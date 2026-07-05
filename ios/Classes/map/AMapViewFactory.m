@@ -13,6 +13,7 @@
 #import "MapHandlers.h"
 #import "MarkTool.h"
 #import "CommonDefine.h"
+#import "LocationPermissionHelper.h"
 
 static NSString *mapChannelName = @"me.yohom/map";
 static NSString *markerClickedChannelName = @"me.yohom/marker_clicked";
@@ -172,7 +173,7 @@ static NSString *mapMoveChannelName = @"me.yohom/map_moved";
 
 #pragma MAMapViewDelegate
 - (void)mapViewRequireLocationAuth:(CLLocationManager *)locationManager {
-    [locationManager requestAlwaysAuthorization];
+    [LocationPermissionHelper requestWhenInUseIfNeeded:locationManager];
 }
 /// 点击annotation回调
 - (void)mapView:(MAMapView *)mapView didSelectAnnotationView:(MAAnnotationView *)view {

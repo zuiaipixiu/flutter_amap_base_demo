@@ -52,7 +52,6 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   bool _mapReady = false;
   bool _naviReady = false;
   bool _sdkReady = false;
-  bool _isLocating = false;
 
   @override
   void initState() {
@@ -72,6 +71,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     _setStatus('正在初始化高德 SDK...');
     try {
       await AMap.setKey(_iosAmapKey);
+      await _location.init();
       if (!mounted) {
         _sdkReady = true;
         return;
@@ -107,7 +107,35 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
             bottom: 0,
             child: _buildBottomCard(),
           ),
+          if (_sdkReady && !_showEmbeddedNavi)
+            Positioned(
+              right: 16,
+              bottom: _bottomCardHeight + 16,
+              child: _buildLocateButton(),
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLocateButton() {
+    return Material(
+      elevation: 4,
+      shadowColor: Colors.black26,
+      shape: const CircleBorder(),
+      color: Colors.white,
+      child: InkWell(
+        onTap: _mapReady ? _onLocateButtonTap : null,
+        customBorder: const CircleBorder(),
+        child: const SizedBox(
+          width: 48,
+          height: 48,
+          child: Icon(
+            Icons.my_location,
+            color: Color(0xFF1261FF),
+            size: 24,
+          ),
+        ),
       ),
     );
   }
@@ -127,7 +155,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
       onAMapViewCreated: (controller) {
         _mapController = controller;
         _mapReady = true;
-        _setStatus('地图已创建，正在定位当前位置...');
+        _setStatus('地图已就绪，点击右下角定位按钮');
         unawaited(_onMapReady());
       },
     );
@@ -276,20 +304,19 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
   Future<void> _onMapReady() async {
     await _renderBaseMarkers();
-    await _showCurrentLocationAtCenter();
   }
 
-  Future<void> _showCurrentLocationAtCenter() async {
+  Future<void> _onLocateButtonTap() async {
     final AMapController? controller = _mapController;
-    if (controller == null || _isLocating) {
+    if (controller == null || !_mapReady) {
       return;
     }
 
-    _isLocating = true;
+    _setStatus('正在定位...');
     try {
       final bool granted = await Permissions().requestPermission();
       if (!granted) {
-        _setStatus('定位权限未授予，暂时无法展示当前位置');
+        _setStatus('定位权限未授予，请在系统设置中开启');
         return;
       }
 
@@ -301,22 +328,23 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
           showsHeadingIndicator: false,
         ),
       );
+      _setStatus('正在获取当前位置...');
 
       final location = await _location.getLocation(
         LocationClientOptions(
           isOnceLocation: true,
-          isNeedAddress: true,
+          isNeedAddress: false,
           locationMode: LocationMode.Hight_Accuracy,
           locationPurpose: AMapLocationPurpose.Transport,
           locationTimeout: 10000,
-          reGeocodeTimeout: 10000,
+          reGeocodeTimeout: 5000,
         ),
       );
 
       final num? latitude = location.latitude;
       final num? longitude = location.longitude;
       if (latitude == null || longitude == null) {
-        _setStatus('已开启定位图层，但未拿到有效坐标');
+        _setStatus('未获取到有效坐标，请稍后重试');
         return;
       }
 
@@ -328,11 +356,11 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
         zoom: 16,
       );
 
-      _setStatus('已定位到当前位置，并移动到屏幕中心');
+      await _renderBaseMarkers(fitView: false);
+      _setStatus('已定位到当前位置');
     } catch (e) {
-      _setStatus('当前位置展示失败: $e');
+      _setStatus('定位失败: $e');
     } finally {
-      _isLocating = false;
       unawaited(_location.stopLocate());
     }
   }
@@ -372,40 +400,44 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     );
   }
 
-  Future<void> _renderBaseMarkers() async {
+  Future<void> _renderBaseMarkers({bool fitView = true}) async {
     final AMapController? controller = _mapController;
     if (controller == null) {
       return;
     }
 
     final LatLng routeStart = _currentLatLng ?? _start;
-
-    await controller.addMarkers(
-      [
+    final List<MarkerOptions> markers = <MarkerOptions>[
+      if (_currentLatLng == null)
         MarkerOptions(
           position: routeStart,
           icon: 'images/amap_start.png',
           title: '起点',
-          snippet: _currentLatLng == null ? '天安门附近' : '当前位置',
+          snippet: '天安门附近',
         ),
-        MarkerOptions(
-          position: _end,
-          icon: 'images/amap_end.png',
-          title: '终点',
-          snippet: '望京附近',
-        ),
-      ],
+      MarkerOptions(
+        position: _end,
+        icon: 'images/amap_end.png',
+        title: '终点',
+        snippet: '望京附近',
+      ),
+    ];
+
+    await controller.addMarkers(
+      markers,
       moveToCenter: false,
       clear: true,
     );
 
-    await controller.zoomToSpan(
-      [routeStart, _end],
-      paddingT: 120,
-      paddingL: 80,
-      paddingB: 320,
-      paddingR: 80,
-    );
+    if (fitView) {
+      await controller.zoomToSpan(
+        [routeStart, _end],
+        paddingT: 120,
+        paddingL: 80,
+        paddingB: 320,
+        paddingR: 80,
+      );
+    }
   }
 
   Future<void> _planDriveRoute() async {
@@ -521,9 +553,10 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     });
 
     if (_mapReady) {
-      await _renderBaseMarkers();
       if (_driveRouteResult != null) {
         await _drawRouteOnMap();
+      } else {
+        await _renderBaseMarkers(fitView: _currentLatLng == null);
       }
     }
 

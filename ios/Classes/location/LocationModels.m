@@ -81,7 +81,9 @@
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;
     }
     locationManager.pausesLocationUpdatesAutomatically = _pausesLocationUpdatesAutomatically;
-    locationManager.allowsBackgroundLocationUpdates = _allowsBackgroundLocationUpdates;
+    if (_allowsBackgroundLocationUpdates) {
+        locationManager.allowsBackgroundLocationUpdates = YES;
+    }
     locationManager.locationTimeout = _locationTimeout;
     locationManager.reGeocodeTimeout = _reGeocodeTimeout;
     locationManager.locatingWithReGeocode = _locatingWithReGeocode;

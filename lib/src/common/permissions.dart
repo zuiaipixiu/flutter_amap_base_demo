@@ -29,8 +29,13 @@ class Permissions {
       sdkInt = info.version.sdkInt;
     }
     if (sdkInt >= 23) {
-      return await _permissionChannel.invokeMethod('requestPermission') ;
-//          .then((result) => result );
+      final dynamic result = await _permissionChannel
+          .invokeMethod('requestPermission')
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => false,
+          );
+      return result == true;
     } else {
       ///when under sdk 23 (exclusive)
       ///permissions already declared in manifest and granted when downloaded

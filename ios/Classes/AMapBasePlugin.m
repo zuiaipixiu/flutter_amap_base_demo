@@ -5,6 +5,8 @@
 #import "AMapNavViewFactory.h"
 #import "IMethodHandler.h"
 #import "FunctionRegistry.h"
+#import "LocationHandlers.h"
+#import "LocationPermissionHelper.h"
 #import <CoreLocation/CoreLocation.h>
 
 static NSObject <FlutterPluginRegistrar> *_registrar;
@@ -30,15 +32,9 @@ static NSObject <FlutterPluginRegistrar> *_registrar;
         NSLog(@"premission call name  = %@", call.method);
         
         if ([@"requestPermission" isEqualToString:call.method]) {
-            if ([CLLocationManager locationServicesEnabled] && ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways)) {
-
-            //定位功能可用
-                result(@YES);
-            } else if ([CLLocationManager authorizationStatus] ==kCLAuthorizationStatusDenied) {
-            //定位不能用
-                result(@NO);
-            }
-            
+            [LocationPermissionHelper requestWhenInUseAuthorization:^(BOOL granted) {
+                result(@(granted));
+            }];
         } else if ([@"requestPermissionOpenSetting" isEqualToString:call.method]){
             [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
         } else {
@@ -112,6 +108,8 @@ static NSObject <FlutterPluginRegistrar> *_registrar;
             result(FlutterMethodNotImplemented);
         }
     }];
+
+    RegisterLocationEventChannel(registrar);
 
     // 定位 channel
     FlutterMethodChannel *locationChannel = [FlutterMethodChannel

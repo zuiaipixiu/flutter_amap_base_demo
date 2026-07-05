@@ -13,6 +13,7 @@ import com.amap.api.maps.MapsInitializer
 import com.amap.api.services.core.ServiceSettings
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import me.yohom.amapbase.location.Init
 import me.yohom.amapbase.map.AMapFactory
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -127,6 +128,9 @@ class AMapBasePlugin {
                         NAVI_METHOD_HANDLER[call.method]
                                 ?.onMethodCall(call, result) ?: result.notImplemented()
                     }
+
+            // 定位 event channel（插件注册时即绑定，避免 Dart 端 listen 时找不到实现）
+            Init.registerEventChannel(registrar.messenger())
 
             // 定位 channel
             MethodChannel(registrar.messenger(), "me.yohom/location")

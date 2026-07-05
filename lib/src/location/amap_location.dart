@@ -12,6 +12,8 @@ class AMapLocation {
   static const _locationChannel = MethodChannel('me.yohom/location');
   static const _locationEventChannel = EventChannel('me.yohom/location_event');
 
+  bool _initialized = false;
+
   AMapLocation._();
 
   factory AMapLocation() {
@@ -25,25 +27,108 @@ class AMapLocation {
 
   /// 初始化
   Future init() {
-    return _locationChannel.invokeMethod('location#init');
+    return _ensureInitialized();
+  }
+
+  Future<void> _ensureInitialized() async {
+    if (_initialized) {
+      return;
+    }
+    await _locationChannel.invokeMethod('location#init');
+    _initialized = true;
+  }
+
+  Location _parseLocationResult(dynamic result) {
+    return Location.fromJson(jsonDecode(result as String));
+  }
+
+  int _locationTimeoutMs(LocationClientOptions options) {
+    return (options.locationTimeout + options.reGeocodeTimeout + 5000).toInt();
   }
 
   /// 只定位一次
-  Future<Location> getLocation(LocationClientOptions options) {
+  Future<Location> getLocation(LocationClientOptions options) async {
     L.p('getLocation dart端参数: options.toJsonString() -> ${options.toJsonString()}');
 
-    _locationChannel.invokeMethod('location#startLocate', {'options': options.toJsonString()});
+    await _ensureInitialized();
 
-    return _locationEventChannel.receiveBroadcastStream().map((result) => result).map((resultJson) => Location.fromJson(jsonDecode(resultJson))).first;
+    final completer = Completer<Location>();
+
+    void completeOnce(Location location) {
+      if (!completer.isCompleted) {
+        completer.complete(location);
+      }
+    }
+
+    void completeErrorOnce(Object error, [StackTrace? stackTrace]) {
+      if (!completer.isCompleted) {
+        if (stackTrace != null) {
+          completer.completeError(error, stackTrace);
+        } else {
+          completer.completeError(error);
+        }
+      }
+    }
+
+    late final StreamSubscription<dynamic> subscription;
+    subscription = _locationEventChannel.receiveBroadcastStream().listen(
+      (result) {
+        unawaited(subscription.cancel());
+        completeOnce(_parseLocationResult(result));
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        unawaited(subscription.cancel());
+        completeErrorOnce(error, stackTrace);
+      },
+    );
+
+    try {
+      final dynamic methodResult = await _locationChannel.invokeMethod(
+        'location#startLocate',
+        {'options': options.toJsonString()},
+      );
+      if (methodResult is String && methodResult.startsWith('{')) {
+        unawaited(subscription.cancel());
+        completeOnce(_parseLocationResult(methodResult));
+      }
+    } catch (error, stackTrace) {
+      unawaited(subscription.cancel());
+      completeErrorOnce(error, stackTrace);
+    }
+
+    return completer.future.timeout(
+      Duration(milliseconds: _locationTimeoutMs(options)),
+      onTimeout: () {
+        unawaited(subscription.cancel());
+        throw TimeoutException('定位超时，请检查定位权限和网络后重试');
+      },
+    );
   }
 
   /// 开始定位, 返回定位 结果流
-  Stream<Location> startLocate(LocationClientOptions options) {
+  Future<Stream<Location>> startLocate(LocationClientOptions options) async {
     L.p('startLocate dart端参数: options.toJsonString() -> ${options.toJsonString()}');
 
-    _locationChannel.invokeMethod('location#startLocate', {'options': options.toJsonString()});
+    await _ensureInitialized();
 
-    return _locationEventChannel.receiveBroadcastStream().map((result) => result).map((resultJson) => Location.fromJson(jsonDecode(resultJson)));
+    final controller = StreamController<Location>();
+    late StreamSubscription<Location> subscription;
+    subscription = _locationEventChannel
+        .receiveBroadcastStream()
+        .map(_parseLocationResult)
+        .listen(
+          controller.add,
+          onError: controller.addError,
+          onDone: controller.close,
+        );
+    controller.onCancel = () => subscription.cancel();
+
+    await _locationChannel.invokeMethod(
+      'location#startLocate',
+      {'options': options.toJsonString()},
+    );
+
+    return controller.stream;
   }
 
   /// 结束定位, 但是仍然可以打开, 其实严格说是暂停

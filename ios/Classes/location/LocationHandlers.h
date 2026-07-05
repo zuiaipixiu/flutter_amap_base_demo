@@ -13,6 +13,8 @@
 @interface Init : NSObject <LocationMethodHandler>
 @end
 
+void RegisterLocationEventChannel(NSObject<FlutterPluginRegistrar> *registrar);
+
 #pragma 开始定位
 
 @interface StartLocate : NSObject <LocationMethodHandler, AMapLocationManagerDelegate, FlutterStreamHandler>
