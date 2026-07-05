@@ -31,6 +31,24 @@
 
 
 static NSString *mapNavChannelName = @"me.yohom/map_nav";
+static NSString *naviInfoChannelName = @"me.yohom/navi_info";
+
+@interface NavInfoEventHandler : NSObject <FlutterStreamHandler>
+@property(nonatomic, copy) FlutterEventSink sink;
+@end
+
+@implementation NavInfoEventHandler
+- (FlutterError *_Nullable)onListenWithArguments:(id _Nullable)arguments
+                                       eventSink:(FlutterEventSink)events {
+    self.sink = events;
+    return nil;
+}
+
+- (FlutterError *_Nullable)onCancelWithArguments:(id _Nullable)arguments {
+    self.sink = nil;
+    return nil;
+}
+@end
 
 @implementation AMapNavViewFactory {
 }
@@ -76,6 +94,8 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 @property (nonatomic, strong) UIButton *rightTrafficBtn;
 
 @property (nonatomic, strong) FlutterMethodChannel *methodChannel;
+@property (nonatomic, strong) FlutterEventChannel *naviInfoEventChannel;
+@property (nonatomic, strong) NavInfoEventHandler *naviInfoEventHandler;
 
 
 @end
@@ -85,6 +105,7 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 {
   CGRect _frame;
   int64_t _viewId;
+  BOOL _navigationTornDown;
 }
 
 
@@ -149,11 +170,22 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 }
 
 - (UIView *)view {
+  if (_navigationTornDown || !_driveView) {
+    static UIView *placeholderView;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+      placeholderView = [[UIView alloc] initWithFrame:CGRectZero];
+    });
+    return placeholderView;
+  }
   return self.driveView;
 }
 
 
 - (AMapNaviDriveView *)driveView {
+    if (_navigationTornDown) {
+        return _driveView;
+    }
     if (!_driveView) {
         _driveView = [[AMapNaviDriveView alloc] initWithFrame:CGRectZero];
         
@@ -193,6 +225,31 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
         
     }
     return _driveView;;
+}
+
+- (void)tearDownNavigationResources {
+    if (_navigationTornDown) {
+        return;
+    }
+    _navigationTornDown = YES;
+    DLog(@"nav view release resources viewId=%lld", _viewId);
+
+    AMapNaviDriveManager *driveManager = [AMapNaviDriveManager sharedInstance];
+    [driveManager stopNavi];
+    [driveManager setDelegate:nil];
+    if (_driveView) {
+        [driveManager removeDataRepresentative:_driveView];
+        _driveView.delegate = nil;
+        [_driveView removeFromSuperview];
+    }
+    [driveManager removeDataRepresentative:self];
+    [AMapNaviDriveManager destroyInstance];
+
+    self.crossImageView.image = nil;
+    _driveView = nil;
+    [_methodChannel setMethodCallHandler:nil];
+    [_naviInfoEventChannel setStreamHandler:nil];
+    self.naviInfoEventHandler.sink = nil;
 }
 
 - (FlutterMethodChannel *)methodChannel {
@@ -312,6 +369,11 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
     
     //endregion
 
+    self.naviInfoEventHandler = [[NavInfoEventHandler alloc] init];
+    self.naviInfoEventChannel = [FlutterEventChannel eventChannelWithName:[NSString stringWithFormat:@"%@%lld", naviInfoChannelName, _viewId]
+                                                          binaryMessenger:[AMapBasePlugin registrar].messenger];
+    [self.naviInfoEventChannel setStreamHandler:self.naviInfoEventHandler];
+
     [self.methodChannel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
         
       NSString *callMethod = call.method;
@@ -375,7 +437,7 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
       } else if([callMethod isEqualToString:@"nav#stopCustomeNavi"]){
           [[AMapNaviDriveManager sharedInstance] stopNavi];
       } else if([callMethod isEqualToString:@"nav#destroyCustomeNavi"]){
-          [AMapNaviDriveManager destroyInstance];
+          [self tearDownNavigationResources];
       }
            result(navSuccess);
 
@@ -468,6 +530,13 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 
         self.topInfoView.routeRemainTimeLabel.text = [NSString stringWithFormat:@"需要 %@",remainTime];
 
+        if (self.naviInfoEventHandler.sink) {
+            self.naviInfoEventHandler.sink(@{
+                @"routeRemainDistance": @(naviInfo.routeRemainDistance),
+                @"routeRemainTime": @(naviInfo.routeRemainTime),
+            });
+        }
+
     }
 }
 
@@ -535,9 +604,10 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
     //top left bottom right
     CGFloat offset = 20;
     CGFloat top = top_total_H ;
-    CGFloat left = 40;
+    CGFloat horizontal = 60;
+    CGFloat left = horizontal;
     CGFloat bottom = bottomContentH;
-    CGFloat right = 80;
+    CGFloat right = horizontal;
 
     UIEdgeInsets insets = UIEdgeInsetsMake(top + offset, left, bottom, right);
 
@@ -606,19 +676,11 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 - (void)dealloc
 {
     DLog(@"nav view dealloc");
-    AMapNaviDriveManager *driveManager = [AMapNaviDriveManager sharedInstance];
-    [driveManager stopNavi];
-    [driveManager setDelegate:nil];
-    if (self.driveView) {
-        [driveManager removeDataRepresentative:self.driveView];
-        self.driveView.delegate = nil;
-    }
-    [driveManager removeDataRepresentative:self];
-    [AMapNaviDriveManager destroyInstance];
-    self.crossImageView.image = nil;
-    self.driveView = nil;
+    [self tearDownNavigationResources];
     self.topInfoView = nil;
     self.trafficBarView = nil;
+    self.naviInfoEventChannel = nil;
+    self.naviInfoEventHandler = nil;
     self.methodChannel = nil;
 }
 

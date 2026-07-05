@@ -32,6 +32,7 @@ export 'src/navi/amap_navi.dart';
 export "src/navi/amap_navi_view.dart";
 export 'src/navi/amap_navi_view_controller.dart';
 export 'src/navi/model/amap_nav_options.dart';
+export 'src/navi/model/navi_progress_info.dart';
 export 'src/search/amap_search.dart';
 export 'src/search/model/drive_route_result.dart';
 export 'src/search/model/geocode_result.dart';

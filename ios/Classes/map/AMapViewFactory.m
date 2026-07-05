@@ -92,6 +92,7 @@ static NSString *mapMoveChannelName = @"me.yohom/map_moved";
   FlutterEventChannel *_mapMoveEventChannel;
 
   MAMapView *_mapView;
+  BOOL _mapReleased;
   MarkerEventHandler *_eventHandler;
 
   MapMoveEventHandler *_moveEventHandle;
@@ -113,7 +114,33 @@ static NSString *mapMoveChannelName = @"me.yohom/map_moved";
 }
 
 - (UIView *)view {
-  return _mapView;
+  if (_mapView) {
+    return _mapView;
+  }
+  static UIView *placeholderView;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    placeholderView = [[UIView alloc] initWithFrame:CGRectZero];
+  });
+  return placeholderView;
+}
+
+- (void)releaseMapResources {
+  if (_mapReleased) {
+    return;
+  }
+  _mapReleased = YES;
+  DLog(@"map view release resources viewId=%lld", _viewId);
+  if (_mapView) {
+    _mapView.delegate = nil;
+    [_mapView removeAnnotations:_mapView.annotations];
+    [_mapView removeOverlays:_mapView.overlays];
+    [_mapView removeFromSuperview];
+    _mapView = nil;
+  }
+  [_methodChannel setMethodCallHandler:nil];
+  [_markerClickedEventChannel setStreamHandler:nil];
+  [_mapMoveEventChannel setStreamHandler:nil];
 }
 
 - (void)setup {
@@ -148,6 +175,14 @@ static NSString *mapMoveChannelName = @"me.yohom/map_moved";
                                                binaryMessenger:[AMapBasePlugin registrar].messenger];
   __weak __typeof__(self) weakSelf = self;
   [_methodChannel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
+    if ([call.method isEqualToString:@"map#releaseView"]) {
+      __typeof__(self) strongSelf = weakSelf;
+      if (strongSelf != nil) {
+        [strongSelf releaseMapResources];
+      }
+      result(success);
+      return;
+    }
     NSObject <MapMethodHandler> *handler = [MapFunctionRegistry mapMethodHandler][call.method];
     if (handler) {
       __typeof__(self) strongSelf = weakSelf;
@@ -336,17 +371,9 @@ static NSString *mapMoveChannelName = @"me.yohom/map_moved";
 
 - (void)dealloc {
     DLog(@"map view dealloc viewId=%lld", _viewId);
-    if (_mapView) {
-        _mapView.delegate = nil;
-        [_mapView removeAnnotations:_mapView.annotations];
-        [_mapView removeOverlays:_mapView.overlays];
-        _mapView = nil;
-    }
-    [_methodChannel setMethodCallHandler:nil];
+    [self releaseMapResources];
     _methodChannel = nil;
-    [_markerClickedEventChannel setStreamHandler:nil];
     _markerClickedEventChannel = nil;
-    [_mapMoveEventChannel setStreamHandler:nil];
     _mapMoveEventChannel = nil;
 }
 

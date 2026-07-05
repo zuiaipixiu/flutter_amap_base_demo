@@ -19,6 +19,10 @@ class AMapController {
 
   void dispose() {}
 
+  Future<void> releaseMapView() {
+    return _mapChannel.invokeMethod('map#releaseView');
+  }
+
   Future addTileOverlay(List<LatLng> optionsList) {
     // final _optionsJson = options.toJsonString();
 

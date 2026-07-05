@@ -83,9 +83,10 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   bool _sdkReady = false;
   bool _useEmulatorNavi = kDebugMode;
   bool _isSwitchingPlatformView = false;
-  int _mapViewSession = 0;
-  int _naviViewSession = 0;
   String? _appBundleId;
+  StreamSubscription<NaviProgressInfo>? _naviInfoSubscription;
+  int? _liveNavRemainDistanceMeters;
+  int? _liveNavRemainTimeSeconds;
   StreamSubscription<Location>? _continuousLocationSubscription;
 
   LocationClientOptions get _singleLocationOptions => LocationClientOptions(
@@ -117,6 +118,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   @override
   void dispose() {
     unawaited(_stopContinuousLocation());
+    unawaited(_naviInfoSubscription?.cancel());
     unawaited(_teardownEmbeddedNavi());
     _mapController?.dispose();
     super.dispose();
@@ -215,7 +217,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
   Widget _buildMap() {
     return AMapView(
-      key: ValueKey<int>(_mapViewSession),
+      key: const ValueKey<String>('demo-map-view'),
       amapOptions: const AMapOptions(
         mapType: MAP_TYPE_NORMAL,
         zoomControlsEnabled: false,
@@ -245,11 +247,12 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     }
 
     return AMapNavView(
-      key: ValueKey<int>(_naviViewSession),
+      key: const ValueKey<String>('demo-navi-view'),
       amapNavOptions: navOptions,
       onMapNavViewCreated: (controller) {
         _naviController = controller;
         _naviReady = true;
+        _listenNaviProgress(controller);
         _setStatus(
           _useEmulatorNavi
               ? '虚拟导航已启动，连续定位至$_destinationName'
@@ -407,6 +410,14 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
   Widget _buildBottomCard() {
     final DrivePath? selectedPath = _selectedDrivePath;
+    final String distanceText = _showEmbeddedNavi &&
+            _liveNavRemainDistanceMeters != null
+        ? _formatRemainDistance(_liveNavRemainDistanceMeters!)
+        : _formatDistanceWithUnit(selectedPath?.totalDistance);
+    final String durationText = _showEmbeddedNavi &&
+            _liveNavRemainTimeSeconds != null
+        ? _formatRemainDuration(_liveNavRemainTimeSeconds!)
+        : _formatDuration(selectedPath?.totalDuration);
 
     return Container(
       height: _bottomCardHeight,
@@ -430,9 +441,9 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
               children: [
                 _buildMetric('状态', _status),
                 const SizedBox(width: 12),
-                _buildMetric('距离', _formatDistance(selectedPath?.totalDistance)),
+                _buildMetric('距离', distanceText),
                 const SizedBox(width: 12),
-                _buildMetric('耗时', _formatDuration(selectedPath?.totalDuration)),
+                _buildMetric('耗时', durationText),
               ],
             ),
             const SizedBox(height: 16),
@@ -891,11 +902,80 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     }
   }
 
+  void _listenNaviProgress(NaviMapController controller) {
+    unawaited(_naviInfoSubscription?.cancel());
+    _naviInfoSubscription = controller.navInfoStream.listen(
+      (NaviProgressInfo info) {
+        if (!mounted || !_showEmbeddedNavi) {
+          return;
+        }
+        setState(() {
+          _liveNavRemainDistanceMeters = info.routeRemainDistance;
+          _liveNavRemainTimeSeconds = info.routeRemainTime;
+        });
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        debugPrint('导航进度监听失败: $error');
+      },
+    );
+  }
+
+  String _formatDistanceWithUnit(num? meters) {
+    if (meters == null) {
+      return '--';
+    }
+    if (meters >= 1000) {
+      return '${(meters / 1000).toStringAsFixed(1)} 公里';
+    }
+    return '${meters.toStringAsFixed(0)} 米';
+  }
+
+  String _formatRemainDistance(int meters) {
+    if (meters >= 1000) {
+      return '${(meters / 1000).toStringAsFixed(1)} 公里';
+    }
+    return '$meters 米';
+  }
+
+  String _formatRemainDuration(int seconds) {
+    if (seconds < 60) {
+      return '< 1 分钟';
+    }
+    if (seconds < 3600) {
+      return '${seconds ~/ 60} 分钟';
+    }
+    final int hours = seconds ~/ 3600;
+    final int minutes = (seconds ~/ 60) % 60;
+    if (minutes == 0) {
+      return '$hours 小时';
+    }
+    return '$hours 小时 $minutes 分钟';
+  }
+
   Future<void> _waitForPlatformViewDispose() async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+  }
+
+  Future<void> _releaseMapView() async {
+    final AMapController? controller = _mapController;
+    if (controller == null) {
+      return;
+    }
+    try {
+      await controller.releaseMapView();
+    } catch (e) {
+      debugPrint('释放地图视图失败: $e');
+    } finally {
+      _mapController = null;
+      _mapReady = false;
+    }
   }
 
   Future<void> _teardownEmbeddedNavi() async {
+    await _naviInfoSubscription?.cancel();
+    _naviInfoSubscription = null;
+    _liveNavRemainDistanceMeters = null;
+    _liveNavRemainTimeSeconds = null;
     final NaviMapController? controller = _naviController;
     if (controller != null) {
       await controller.stopCustomeNavi();
@@ -942,8 +1022,11 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
         return;
       }
 
-      _mapController = null;
-      _mapReady = false;
+      await _releaseMapView();
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _isSwitchingPlatformView = true;
       });
@@ -956,7 +1039,6 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
         _showEmbeddedNavi = true;
         _isSwitchingPlatformView = false;
         _naviReady = false;
-        _naviViewSession++;
       });
 
       final bool hasPlannedRoutes = _routePathOptions.isNotEmpty;
@@ -1369,7 +1451,6 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     setState(() {
       _showEmbeddedNavi = false;
       _isSwitchingPlatformView = false;
-      _mapViewSession++;
       _mapReady = false;
       _mapController = null;
     });

@@ -34,6 +34,7 @@ import me.yohom.amapbase.navi.MapNaviListener
 import me.yohom.amapbase.navi.MapNaviViewListener
 import me.yohom.amapbase.navi.MapTouchListener
 
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformView
@@ -49,6 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.schedule
 
 const val navChannelName = "me.yohom/map_nav"
+const val navInfoChannelName = "me.yohom/navi_info"
 
 class NaviViewFactory(private val activityState: AtomicInteger)
     : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
@@ -89,6 +91,8 @@ class NaviView(context: Context,
     private val naviOpts: AMapNavOptions = naviOptions;
     private var trafficBarView = TrafficProgressBar(context)
     private var useEmulatorNavi: Boolean = naviOptions.isUseEmulatorNavi
+    private var naviInfoEventSink: EventChannel.EventSink? = null
+    private var navigationTornDown = false
 
     companion object {
         @JvmStatic
@@ -320,9 +324,25 @@ class NaviView(context: Context,
         // 导航相关method channel
         val naviChannel = MethodChannel(registrar.messenger(), "$navChannelName$id")
         naviChannel.setMethodCallHandler { call, result ->
-            NAVI_METHOD_HANDLER[call.method]
-                    ?.onMethodCall(call, result) ?: result.notImplemented()
+            when (call.method) {
+                "nav#destroyCustomeNavi" -> {
+                    tearDownNavigationResources()
+                    result.success(success)
+                }
+                else -> NAVI_METHOD_HANDLER[call.method]
+                        ?.onMethodCall(call, result) ?: result.notImplemented()
+            }
         }
+
+        EventChannel(registrar.messenger(), "$navInfoChannelName$id").setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                naviInfoEventSink = events
+            }
+
+            override fun onCancel(arguments: Any?) {
+                naviInfoEventSink = null
+            }
+        })
 
 
         // 注册生命周期
@@ -430,6 +450,10 @@ class NaviView(context: Context,
                 tvDistense.text=  pathDistance
                 tvTimeleave.text=  pathRetainTime
 
+                naviInfoEventSink?.success(mapOf(
+                    "routeRemainDistance" to naviInfo.pathRetainDistance,
+                    "routeRemainTime" to naviInfo.pathRetainTime
+                ))
 
             }
 
@@ -482,14 +506,23 @@ class NaviView(context: Context,
 
 
 
-    override fun dispose() {
-        if (disposed) {
+    private fun tearDownNavigationResources() {
+        if (navigationTornDown) {
             return
         }
-        disposed = true
+        navigationTornDown = true
+        naviInfoEventSink = null
         mapNav.stopNavi()
         mapNav.stopSpeak()
-        navView.onDestroy()
+        if (!disposed) {
+            navView.onPause()
+            navView.onDestroy()
+            disposed = true
+        }
+    }
+
+    override fun dispose() {
+        tearDownNavigationResources()
         registrar.activity()?.application?.unregisterActivityLifecycleCallbacks(this)
     }
 
@@ -537,7 +570,7 @@ class NaviView(context: Context,
         if (disposed || activity.hashCode() != registrarActivityHashCode) {
             return
         }
-        navView.onDestroy()
+        dispose()
     }
 
 }
