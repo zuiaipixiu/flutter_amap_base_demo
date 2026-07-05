@@ -8,15 +8,37 @@
 @implementation UnifiedAssets {
 
 }
+
++ (NSString *)pathForAsset:(NSString *)asset {
+    if (asset == nil || asset.length == 0) {
+        return nil;
+    }
+
+    NSArray<NSString *> *packages = @[@"", @"flutter_amap_base", @"amap_base"];
+    for (NSString *package in packages) {
+        NSString *key;
+        if (package.length == 0) {
+            key = [AMapBasePlugin.registrar lookupKeyForAsset:asset];
+        } else {
+            key = [AMapBasePlugin.registrar lookupKeyForAsset:asset fromPackage:package];
+        }
+        if (key == nil) {
+            continue;
+        }
+        NSString *path = [[NSBundle mainBundle] pathForResource:key ofType:nil];
+        if (path != nil && [[NSFileManager defaultManager] fileExistsAtPath:path]) {
+            return path;
+        }
+    }
+    return nil;
+}
+
 + (NSString *)getAssetPath:(NSString *)asset {
-    NSString *key = [AMapBasePlugin.registrar lookupKeyForAsset:asset];
-    return [[NSBundle mainBundle] pathForResource:key ofType:nil];
+    return [self pathForAsset:asset];
 }
 
 + (NSString *)getDefaultAssetPath:(NSString *)asset {
-    NSString *key = [AMapBasePlugin.registrar lookupKeyForAsset:asset fromPackage:@"amap_base"];
-    return [[NSBundle mainBundle] pathForResource:key ofType:nil];
+    return [self pathForAsset:asset];
 }
-
 
 @end

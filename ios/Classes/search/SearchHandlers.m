@@ -455,13 +455,26 @@
 
     _routePlanParam = [RoutePlanParam mj_objectWithKeyValues:routePlanParamJson];
 
+    NSInteger strategy = _routePlanParam.mode;
+    // 策略 5~20 属于 V1 多备选驾车算路，需走 AMapDrivingRouteSearch 才能一次返回多条路线。
+    // V2（AMapDrivingV2RouteSearch）仅支持 32~45，且默认只返回单条路线。
+    if (strategy >= 5 && strategy <= 20) {
+        AMapDrivingRouteSearchRequest *routeQuery = [[AMapDrivingRouteSearchRequest alloc] init];
+        routeQuery.origin = _routePlanParam.from;
+        routeQuery.destination = _routePlanParam.to;
+        routeQuery.strategy = strategy;
+        routeQuery.waypoints = _routePlanParam.passedByPoints;
+        routeQuery.avoidpolygons = _routePlanParam.avoidPolygons;
+        routeQuery.avoidroad = _routePlanParam.avoidRoad;
+        routeQuery.requireExtension = YES;
+        [_search AMapDrivingRouteSearch:routeQuery];
+        return;
+    }
 
-
-    //     路线请求参数构造
     AMapDrivingCalRouteSearchRequest *routeQuery = [[AMapDrivingCalRouteSearchRequest alloc] init];
         routeQuery.origin = _routePlanParam.from;
         routeQuery.destination = _routePlanParam.to;
-        routeQuery.strategy = _routePlanParam.mode;
+        routeQuery.strategy = strategy;
         routeQuery.waypoints = _routePlanParam.passedByPoints;
         routeQuery.avoidpolygons = _routePlanParam.avoidPolygons;
         routeQuery.avoidroad = _routePlanParam.avoidRoad;
@@ -473,18 +486,28 @@
 
 /// 路径规划搜索回调.
 - (void)onRouteSearchDone:(AMapRouteSearchBaseRequest *)request response:(AMapRouteSearchResponse *)response {
+    if (_result == nil) {
+        return;
+    }
     if (response.route.paths.count == 0) {
-        return _result(@"没有规划出合适的路线");
+        _result([FlutterError errorWithCode:@"-1"
+                                    message:@"没有规划出合适的路线"
+                                    details:nil]);
+        _result = nil;
+        return;
     }
 
-
     _result([[[UnifiedDriveRouteResult alloc] initWithAMapRouteSearchResponse:response] mj_JSONString]);
+    _result = nil;
 }
 
 /// 路线规划失败回调
 - (void)AMapSearchRequest:(id)request didFailWithError:(NSError *)error {
     if (_result != nil) {
-        _result([NSString stringWithFormat:@"路线规划失败, 错误码: %ld", (long) error.code]);
+        _result([FlutterError errorWithCode:[NSString stringWithFormat:@"%ld", (long) error.code]
+                                    message:[Misc toAMapErrorDesc:error.code]
+                                    details:error.localizedDescription]);
+        _result = nil;
     }
 }
 
@@ -529,17 +552,28 @@
 
 /// 路径规划搜索回调.
 - (void)onRouteSearchDone:(AMapRouteSearchBaseRequest *)request response:(AMapRouteSearchResponse *)response {
+    if (_result == nil) {
+        return;
+    }
     if (response.route.paths.count == 0) {
-        return _result(@"没有规划出合适的路线");
+        _result([FlutterError errorWithCode:@"-1"
+                                    message:@"没有规划出合适的路线"
+                                    details:nil]);
+        _result = nil;
+        return;
     }
 
     _result([[[UnifiedDriveRouteResult alloc] initWithAMapRouteSearchResponse:response] mj_JSONString]);
+    _result = nil;
 }
 
 /// 路线规划失败回调
 - (void)AMapSearchRequest:(id)request didFailWithError:(NSError *)error {
     if (_result != nil) {
-        _result([NSString stringWithFormat:@"路线规划失败, 错误码: %ld", (long) error.code]);
+        _result([FlutterError errorWithCode:[NSString stringWithFormat:@"%ld", (long) error.code]
+                                    message:[Misc toAMapErrorDesc:error.code]
+                                    details:error.localizedDescription]);
+        _result = nil;
     }
 }
 

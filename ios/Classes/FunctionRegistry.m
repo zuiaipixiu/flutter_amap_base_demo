@@ -45,6 +45,7 @@ static NSDictionary<NSString *, NSObject <MapMethodHandler> *> *_mapDictionary;
                 @"map#setMapCustomEnable":[SetMapCustomEnable alloc],
                 @"tool#calcDistance":[CalcDistance alloc],
                 @"map#getCenterPoint":[GetCenterPoint alloc],
+                @"map#getUserLocation":[GetUserLocation alloc],
         };
     }
     return _mapDictionary;

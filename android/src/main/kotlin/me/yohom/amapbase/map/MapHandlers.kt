@@ -508,6 +508,23 @@ object GetCenterLnglat : MapMethodHandler {
     }
 }
 
+object GetUserLocation : MapMethodHandler {
+    lateinit var map: AMap
+    override fun with(map: AMap): MapMethodHandler {
+        this.map = map
+        return this
+    }
+
+    override fun onMethodCall(methodCall: MethodCall, methodResult: MethodChannel.Result) {
+        val location = map.myLocation
+        if (location == null) {
+            methodResult.error("NO_LOCATION", "地图蓝点位置尚未就绪", null)
+            return
+        }
+        methodResult.success(LatLng(location.latitude, location.longitude).toFieldJson())
+    }
+}
+
 object SetMapStatusLimits : MapMethodHandler {
 
     lateinit var map: AMap

@@ -51,7 +51,11 @@ static NSObject <FlutterPluginRegistrar> *_registrar;
         if ([@"setKey" isEqualToString:call.method]) {
             NSString *key = call.arguments[@"key"];
             [AMapServices sharedServices].apiKey = key;
+            NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
+            NSLog(@"[AMap] apiKey configured, Bundle ID = %@", bundleId);
             result(@"key设置成功");
+        } else if ([@"getBundleId" isEqualToString:call.method]) {
+            result([[NSBundle mainBundle] bundleIdentifier] ?: @"");
         } else {
             result(FlutterMethodNotImplemented);
         }

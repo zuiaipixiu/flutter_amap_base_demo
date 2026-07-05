@@ -274,6 +274,12 @@ class AMapController {
     return LatLng.fromJson(json.decode(result));
   }
 
+  /// 获取地图蓝点（用户位置），需先开启 showMyLocation
+  Future<LatLng> getUserLatLng() async {
+    final String result = await _mapChannel.invokeMethod('map#getUserLocation');
+    return LatLng.fromJson(json.decode(result));
+  }
+
   /// 截图
   ///
   /// 可能会抛出 [PlatformException]

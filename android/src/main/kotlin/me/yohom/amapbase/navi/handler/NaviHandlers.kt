@@ -7,6 +7,7 @@ import com.amap.api.navi.AMapNavi
 import com.amap.api.navi.AmapNaviPage
 import com.amap.api.navi.AmapNaviParams
 import com.amap.api.navi.AmapNaviType
+import com.amap.api.navi.enums.PathPlanningStrategy
 import com.amap.api.navi.model.NaviLatLng
 import me.yohom.amapbase.navi.AMapNavOptions
 import io.flutter.plugin.common.MethodCall
@@ -93,8 +94,20 @@ object ChangeMapRouteNaviWithInfo : NaviMethodHandler {
         val navType = call.argument<Int>("navType") ?: AmapNaviType.DRIVER //default as
         val bottomContentH = call.argument<Double>("bottomContentH ") ?: 100.0
         val useEmulatorNavi = call.argument<Boolean>("useEmulatorNavi") ?: false
+        val selectedRouteIndex = call.argument<Int>("selectedRouteIndex") ?: 0
+        val hasPlannedRoutes = call.argument<Boolean>("hasPlannedRoutes") ?: false
+        val selectedRouteDistance = call.argument<Number>("selectedRouteDistance")?.toDouble() ?: 0.0
+        val selectedRouteDuration = call.argument<Number>("selectedRouteDuration")?.toLong() ?: 0L
+        val selectedRouteMidLatitude = call.argument<Number>("selectedRouteMidLatitude")?.toDouble() ?: 0.0
+        val selectedRouteMidLongitude = call.argument<Number>("selectedRouteMidLongitude")?.toDouble() ?: 0.0
 
         NaviView.activeUseEmulatorNavi = useEmulatorNavi
+        NaviView.activeSelectedRouteIndex = selectedRouteIndex
+        NaviView.activeHasPlannedRoutes = hasPlannedRoutes
+        NaviView.activeSelectedRouteDistance = selectedRouteDistance
+        NaviView.activeSelectedRouteDuration = selectedRouteDuration
+        NaviView.activeSelectedRouteMidLatitude = selectedRouteMidLatitude
+        NaviView.activeSelectedRouteMidLongitude = selectedRouteMidLongitude
 
         val mapNav = AMapNavi.getInstance(registrar.context())
         mapNav.stopNavi()
@@ -104,14 +117,21 @@ object ChangeMapRouteNaviWithInfo : NaviMethodHandler {
         val end = NaviLatLng(endLocation.latitude, endLocation.longitude)
 
         when (navType) {
-            AMapNavOptions.NAVI_TYPE_DRIVER ->
-                mapNav?.calculateDriveRoute(listOf(start), listOf(end), null, mapNav.strategyConvert(true, false, false, false, false))
+            AMapNavOptions.NAVI_TYPE_DRIVER -> {
+                mapNav.setMultipleRouteNaviMode(hasPlannedRoutes)
+                val strategy = if (hasPlannedRoutes) {
+                    PathPlanningStrategy.DRIVING_MULTIPLE_ROUTES_DEFAULT
+                } else {
+                    mapNav.strategyConvert(true, false, false, false, false)
+                }
+                mapNav.calculateDriveRoute(listOf(start), listOf(end), null, strategy)
+            }
 
             AMapNavOptions.NAVI_TYPE_RIDE ->
-                mapNav?.calculateRideRoute(start, end)
+                mapNav.calculateRideRoute(start, end)
 
             AMapNavOptions.NAVI_TYPE_WALK ->
-                mapNav?.calculateWalkRoute(start, end)
+                mapNav.calculateWalkRoute(start, end)
         }
 
         result.success(success)

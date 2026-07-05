@@ -37,6 +37,7 @@ val MAP_METHOD_HANDLER: Map<String, MapMethodHandler> = mapOf(
         "map#setMapCustomEnable" to SetMapCustomEnable,
         "map#setCustomMapStyleID" to SetCustomMapStyleID,
         "map#getCenterPoint" to GetCenterLnglat,
+        "map#getUserLocation" to GetUserLocation,
         "map#changeLatLng" to ChangeLatLng
 )
 

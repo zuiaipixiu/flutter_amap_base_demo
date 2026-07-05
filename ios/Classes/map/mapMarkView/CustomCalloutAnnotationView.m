@@ -59,8 +59,7 @@ static CGFloat addressFont = 12;
     
     if (self)
     {
-        self.bounds = CGRectMake(0.f, 0.f, kWidth, kHeight);
-        
+        self.clipsToBounds = NO;
         [self addSubview:self.calloutView];
         
         [self.calloutView mas_makeConstraints:^(MASConstraintMaker *make) {

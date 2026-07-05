@@ -21,6 +21,9 @@
 @interface GetCenterPoint : NSObject <MapMethodHandler>
 @end
 
+@interface GetUserLocation : NSObject <MapMethodHandler>
+@end
+
 @interface CalcDistance : NSObject <MapMethodHandler>
 @end
 

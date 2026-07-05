@@ -97,6 +97,7 @@ class AMapBasePlugin {
                     .setMethodCallHandler { methodCall, result ->
                         when (methodCall.method) {
                             "setKey" -> result.success("android端需要在Manifest里配置key")
+                            "getBundleId" -> result.success(registrar.context().packageName)
                             else -> result.notImplemented()
                         }
                     }

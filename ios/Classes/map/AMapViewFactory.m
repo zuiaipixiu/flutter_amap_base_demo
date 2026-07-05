@@ -196,17 +196,21 @@ static NSString *mapMoveChannelName = @"me.yohom/map_moved";
     UnifiedPolylineOptions *options = [polyline options];
 
     polylineRenderer.lineWidth = (CGFloat) (options.width);
-  polylineRenderer.lineJoinType = (MALineJoinType) options.lineJoinType;
-  polylineRenderer.lineCapType = (MALineCapType) options.lineCapType;
-    
-      
-//    polylineRenderer.strokeColor = [options.color hexStringToColor];
-//  polylineRenderer.strokeImage = [UIImage imageNamed:@"map_line_green"];
-      
-    polylineRenderer.strokeImage = [UIImage imageWithContentsOfFile:[UnifiedAssets getAssetPath:options.customTexture]];
+    polylineRenderer.lineJoinType = (MALineJoinType) options.lineJoinType;
+    polylineRenderer.lineCapType = (MALineCapType) options.lineCapType;
 
-    
-      
+    UIImage *textureImage = nil;
+    if (options.customTexture.length > 0) {
+      textureImage = [UIImage imageWithContentsOfFile:[UnifiedAssets getAssetPath:options.customTexture]];
+    }
+    if (textureImage != nil) {
+      polylineRenderer.strokeImage = textureImage;
+    } else if (options.color.length > 0) {
+      polylineRenderer.strokeColor = [options.color hexStringToColor];
+    } else {
+      polylineRenderer.strokeColor = [UIColor blackColor];
+    }
+
     if (options.isDottedLine) {
       polylineRenderer.lineDashType = (MALineDashType) ((MALineCapType) options.dottedLineType + 1);
     } else {
@@ -257,12 +261,22 @@ static NSString *mapMoveChannelName = @"me.yohom/map_moved";
     if ([annotation isKindOfClass:[MarkerAnnotation class]]) {
       UnifiedMarkerOptions *options = ((MarkerAnnotation *) annotation).markerOptions;
       annotationView.zIndex = (NSInteger) options.zIndex;
+      UIImage *markerImage = nil;
       if (options.icon != nil) {
-        annotationView.image = [UIImage imageWithContentsOfFile:[UnifiedAssets getAssetPath:options.icon]];
-      } else {
-        annotationView.image = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:@"images/default_marker.png"]];
+        markerImage = [UIImage imageWithContentsOfFile:[UnifiedAssets getAssetPath:options.icon]];
       }
-      annotationView.centerOffset = CGPointMake(options.anchorU, options.anchorV);
+      if (markerImage == nil) {
+        markerImage = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:@"images/default_marker.png"]];
+      }
+      annotationView.image = markerImage;
+      if (markerImage != nil) {
+        CGSize imageSize = markerImage.size;
+        annotationView.bounds = CGRectMake(0, 0, imageSize.width, imageSize.height);
+        annotationView.clipsToBounds = NO;
+        CGFloat offsetX = (0.5 - options.anchorU) * imageSize.width;
+        CGFloat offsetY = (0.5 - options.anchorV) * imageSize.height;
+        annotationView.centerOffset = CGPointMake(offsetX, offsetY);
+      }
       annotationView.calloutOffset = CGPointMake(options.infoWindowOffsetX, options.infoWindowOffsetY);
       annotationView.draggable = options.draggable;
       annotationView.canShowCallout = options.infoWindowEnable;
@@ -318,6 +332,22 @@ static NSString *mapMoveChannelName = @"me.yohom/map_moved";
     
   
     
+}
+
+- (void)dealloc {
+    DLog(@"map view dealloc viewId=%lld", _viewId);
+    if (_mapView) {
+        _mapView.delegate = nil;
+        [_mapView removeAnnotations:_mapView.annotations];
+        [_mapView removeOverlays:_mapView.overlays];
+        _mapView = nil;
+    }
+    [_methodChannel setMethodCallHandler:nil];
+    _methodChannel = nil;
+    [_markerClickedEventChannel setStreamHandler:nil];
+    _markerClickedEventChannel = nil;
+    [_mapMoveEventChannel setStreamHandler:nil];
+    _mapMoveEventChannel = nil;
 }
 
 @end

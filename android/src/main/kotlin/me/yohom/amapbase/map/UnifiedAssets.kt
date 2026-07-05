@@ -10,19 +10,39 @@ import me.yohom.amapbase.AMapBasePlugin.Companion.registrar
 object UnifiedAssets {
     private val assetManager = registrar.context().assets
 
-    /**
-     * 获取宿主app的图片
-     */
-    fun getBitmapDescriptor(asset: String): BitmapDescriptor {
-        val assetFileDescriptor = assetManager.openFd(registrar.lookupKeyForAsset(asset))
-        return BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeStream(assetFileDescriptor.createInputStream()))
+    private fun resolveAssetKey(asset: String): String? {
+        for (pkg in listOf<String?>(null, "flutter_amap_base", "amap_base")) {
+            try {
+                val key = if (pkg == null) {
+                    registrar.lookupKeyForAsset(asset)
+                } else {
+                    registrar.lookupKeyForAsset(asset, pkg)
+                }
+                assetManager.openFd(key).close()
+                return key
+            } catch (_: Exception) {
+            }
+        }
+        return null
     }
 
     /**
-     * 获取plugin自带的图片
+     * 优先从宿主 app 查找图片，找不到则回退到插件包 flutter_amap_base / amap_base。
+     */
+    fun getBitmapDescriptor(asset: String): BitmapDescriptor {
+        val key = resolveAssetKey(asset)
+            ?: throw IllegalArgumentException("Asset not found: $asset")
+        val assetFileDescriptor = assetManager.openFd(key)
+        val bitmap = BitmapFactory.decodeStream(assetFileDescriptor.createInputStream())
+        assetFileDescriptor.close()
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+    /**
+     * 获取 plugin 自带的图片（与 getBitmapDescriptor 使用同一查找逻辑）。
      */
     fun getDefaultBitmapDescriptor(asset: String): BitmapDescriptor {
-        return BitmapDescriptorFactory.fromAsset(registrar.lookupKeyForAsset(asset, "amap_base"))
+        return getBitmapDescriptor(asset)
     }
 
     /**

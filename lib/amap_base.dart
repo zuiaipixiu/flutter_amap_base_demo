@@ -75,4 +75,13 @@ class AMap {
   static Future setKey(String key) {
     return _channel.invokeMethod('setKey', {'key': key});
   }
+
+  /// 获取当前 App 的 Bundle ID / 包名，用于核对高德 Key 绑定信息
+  static Future<String?> getBundleId() async {
+    final dynamic result = await _channel.invokeMethod('getBundleId');
+    if (result is String && result.isNotEmpty) {
+      return result;
+    }
+    return null;
+  }
 }

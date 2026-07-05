@@ -42,12 +42,21 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 - (NSObject <FlutterPlatformView> *)createWithFrame:(CGRect)frame
                                      viewIdentifier:(int64_t)viewId
                                           arguments:(id _Nullable)args {
-  AMapNavViewOptions *options = [AMapNavViewOptions mj_objectWithKeyValues:(NSString *) args];
-    
+  AMapNavViewOptions *options = [self parseNavOptions:args];
 
     AMapNavView *navView = [[AMapNavView alloc] initWithFrame:frame options:options viewIdentifier:viewId];
 
     return navView;
+}
+
+- (AMapNavViewOptions *)parseNavOptions:(id)args {
+    id jsonObject = args;
+    if ([args isKindOfClass:[NSString class]]) {
+        NSData *data = [(NSString *)args dataUsingEncoding:NSUTF8StringEncoding];
+        jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
+    }
+    AMapNavViewOptions *options = [AMapNavViewOptions mj_objectWithKeyValues:jsonObject];
+    return options ?: [[AMapNavViewOptions alloc] init];
 }
 
 @end
@@ -152,6 +161,8 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
         self.driveView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         
         self.driveView.showUIElements = NO;
+        self.driveView.showCrossImage = NO;
+        self.driveView.showTrafficBar = NO;
         self.driveView.showGreyAfterPass = YES;
         self.driveView.autoZoomMapLevel = YES;
         self.driveView.mapViewModeType = AMapNaviViewMapModeTypeDayNightAuto;
@@ -199,6 +210,88 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
     return _topInfoView;
 }
 
+- (NSInteger)resolveSelectedRouteID:(AMapNaviDriveManager *)driveManager {
+    NSArray<NSNumber *> *routeIDs = driveManager.naviRouteIDs;
+    if (routeIDs.count == 0) {
+        return 0;
+    }
+
+    NSDictionary<NSNumber *, AMapNaviRoute *> *naviRoutes = driveManager.naviRoutes;
+    if (naviRoutes.count == 0) {
+        return [routeIDs.firstObject integerValue];
+    }
+
+    const CGFloat targetLat = self.options.selectedRouteMidLatitude;
+    const CGFloat targetLng = self.options.selectedRouteMidLongitude;
+    const BOOL hasRouteMidpoint = fabs(targetLat) > 1.0 || fabs(targetLng) > 1.0;
+    if (hasRouteMidpoint) {
+        NSNumber *bestRouteID = routeIDs.firstObject;
+        CGFloat bestScore = CGFLOAT_MAX;
+        for (NSNumber *routeID in routeIDs) {
+            AMapNaviRoute *route = naviRoutes[routeID];
+            NSArray<AMapNaviPoint *> *coords = route.routeCoordinates;
+            if (route == nil || coords.count == 0) {
+                continue;
+            }
+            AMapNaviPoint *midPoint = coords[coords.count / 2];
+            const CGFloat dLat = fabs(midPoint.latitude - targetLat);
+            const CGFloat dLng = fabs(midPoint.longitude - targetLng);
+            const CGFloat score = dLat + dLng;
+            if (score < bestScore) {
+                bestScore = score;
+                bestRouteID = routeID;
+            }
+        }
+        return bestRouteID.integerValue;
+    }
+
+    if (self.options.selectedRouteDistance > 0) {
+        NSNumber *bestRouteID = routeIDs.firstObject;
+        NSInteger bestScore = NSIntegerMax;
+        for (NSNumber *routeID in routeIDs) {
+            AMapNaviRoute *route = naviRoutes[routeID];
+            if (route == nil) {
+                continue;
+            }
+            NSInteger distanceDiff = labs(route.routeLength - self.options.selectedRouteDistance);
+            NSInteger durationDiff = 0;
+            if (self.options.selectedRouteDuration > 0) {
+                durationDiff = labs(route.routeTime - self.options.selectedRouteDuration);
+            }
+            NSInteger score = distanceDiff * 10 + durationDiff;
+            if (score < bestScore) {
+                bestScore = score;
+                bestRouteID = routeID;
+            }
+        }
+        return bestRouteID.integerValue;
+    }
+
+    NSInteger index = self.options.selectedRouteIndex;
+    if (index < 0 || index >= routeIDs.count) {
+        index = 0;
+    }
+    return [routeIDs[index] integerValue];
+}
+
+- (void)calculateDriveRouteFromStart:(AMapNaviPoint *)startNavPoint
+                               toEnd:(AMapNaviPoint *)endNavPoint {
+    AMapNaviDriveManager *driveManager = [AMapNaviDriveManager sharedInstance];
+    if (self.options.hasPlannedRoutes) {
+        [driveManager setMultipleRouteNaviMode:YES];
+        [driveManager calculateDriveRouteWithStartPoints:@[startNavPoint]
+                                               endPoints:@[endNavPoint]
+                                               wayPoints:nil
+                                         drivingStrategy:AMapNaviDrivingStrategyMultipleDefault];
+    } else {
+        [driveManager setMultipleRouteNaviMode:NO];
+        [driveManager calculateDriveRouteWithStartPoints:@[startNavPoint]
+                                               endPoints:@[endNavPoint]
+                                               wayPoints:nil
+                                         drivingStrategy:AMapNaviDrivingStrategySinglePrioritiseDistance];
+    }
+}
+
 - (void)setup {
     
     CGFloat bottomContentH = self.options.bottomContentH;
@@ -213,13 +306,7 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
     AMapNaviPoint *startNavPoint = [AMapNaviPoint locationWithLatitude:startPoint.latitude longitude:startPoint.longitude];
     AMapNaviPoint *endNavPoint   = [AMapNaviPoint locationWithLatitude:endPoint.latitude longitude:endPoint.longitude];
     
-    
-    
-       //算路
-    [[AMapNaviDriveManager sharedInstance] calculateDriveRouteWithStartPoints:@[startNavPoint]
-                                                                       endPoints:@[endNavPoint]
-                                                                       wayPoints:nil
-                                                           drivingStrategy:AMapNaviDrivingStrategySinglePrioritiseDistance];
+    [self calculateDriveRouteFromStart:startNavPoint toEnd:endNavPoint];
        
     
     
@@ -244,16 +331,45 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
           if (useEmulatorNavi != nil) {
               self.options.useEmulatorNavi = useEmulatorNavi.boolValue;
           }
+
+          NSNumber *selectedRouteIndex = paramDic[@"selectedRouteIndex"];
+          if (selectedRouteIndex != nil) {
+              self.options.selectedRouteIndex = selectedRouteIndex.integerValue;
+          }
+
+          NSNumber *hasPlannedRoutes = paramDic[@"hasPlannedRoutes"];
+          if (hasPlannedRoutes != nil) {
+              self.options.hasPlannedRoutes = hasPlannedRoutes.boolValue;
+          }
+
+          NSNumber *selectedRouteDistance = paramDic[@"selectedRouteDistance"];
+          if (selectedRouteDistance != nil) {
+              self.options.selectedRouteDistance = selectedRouteDistance.integerValue;
+          }
+
+          NSNumber *selectedRouteDuration = paramDic[@"selectedRouteDuration"];
+          if (selectedRouteDuration != nil) {
+              self.options.selectedRouteDuration = selectedRouteDuration.integerValue;
+          }
+
+          NSNumber *selectedRouteMidLatitude = paramDic[@"selectedRouteMidLatitude"];
+          if (selectedRouteMidLatitude != nil) {
+              self.options.selectedRouteMidLatitude = selectedRouteMidLatitude.doubleValue;
+          }
+
+          NSNumber *selectedRouteMidLongitude = paramDic[@"selectedRouteMidLongitude"];
+          if (selectedRouteMidLongitude != nil) {
+              self.options.selectedRouteMidLongitude = selectedRouteMidLongitude.doubleValue;
+          }
           
           AMapNaviPoint *startParamNavPoint = [AMapNaviPoint locationWithLatitude:startParamPoint.latitude longitude:startParamPoint.longitude];
           AMapNaviPoint *endParamNavPoint   = [AMapNaviPoint locationWithLatitude:endParamPoint.latitude longitude:endParamPoint.longitude];
           
-          
-          //驾车算路
-          [[AMapNaviDriveManager sharedInstance] calculateDriveRouteWithStartPoints:@[startParamNavPoint]
-                                                                          endPoints:@[endParamNavPoint]
-                                                                          wayPoints:nil
-                                                                    drivingStrategy:AMapNaviDrivingStrategySinglePrioritiseDistance];
+          self.options.startLocation = startParamPoint;
+          self.options.endLocation = endParamPoint;
+
+          [[AMapNaviDriveManager sharedInstance] stopNavi];
+          [self calculateDriveRouteFromStart:startParamNavPoint toEnd:endParamNavPoint];
           
  
       } else if([callMethod isEqualToString:@"nav#stopCustomeNavi"]){
@@ -289,6 +405,7 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
     
     [self.driveView addSubview:self.trafficBarView];
     self.trafficBarView.frame = CGRectMake(10, top_total_H + 10 + topSafeAreaHeight , 10, 150);
+    self.trafficBarView.hidden = YES;
     
     CGFloat browBtn_Y = SCREEN_HEIGHT - final_bottom_H - 45 - TY_NavTopHeight;
     
@@ -303,6 +420,7 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
     
     [self.driveView addSubview:self.crossImageView];
     self.crossImageView.frame = CGRectMake(0, top_total_H + topSafeAreaHeight, SCREEN_WIDTH, SCREEN_WIDTH / 25 * 16);
+    self.crossImageView.hidden = YES;
 
     
 
@@ -317,6 +435,11 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 
 - (void)driveManagerOnCalculateRouteSuccess:(AMapNaviDriveManager *)driveManager {
     DLog(@"onCalculateRouteSuccess");
+
+    if (self.options.hasPlannedRoutes) {
+        NSInteger routeID = [self resolveSelectedRouteID:driveManager];
+        [driveManager selectNaviRouteWithRouteID:routeID];
+    }
     
     //算路成功后开始导航（虚拟导航 / GPS 导航）
     if (self.options.useEmulatorNavi) {
@@ -357,12 +480,12 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 
 //显示路口放大图
 - (void)driveManager:(AMapNaviDriveManager *)driveManager showCrossImage:(UIImage *)crossImage {
-    [self handleWhenCrossImageShowAndHide:crossImage];
+    // 不展示车道级/路口放大图
 }
 
 //隐藏路口放大图
 - (void)driveManagerHideCrossImage:(AMapNaviDriveManager *)driveManager {
-    [self handleWhenCrossImageShowAndHide:nil];
+    // 不展示车道级/路口放大图
 }
 
 #pragma mark - AMapNaviDriveViewDelegate
@@ -388,27 +511,16 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
     }
 
     if (showMode != AMapNaviDriveViewShowModeCarPositionLocked) {  //非锁车，隐藏路口放大图
-        [self handleWhenCrossImageShowAndHide:nil];
+        self.crossImageView.hidden = YES;
+        self.crossImageView.image = nil;
     }
 }
 
 //处理路口放大图
 - (void)handleWhenCrossImageShowAndHide:(UIImage *)crossImage {
-    if (crossImage && self.driveView.showMode == AMapNaviDriveViewShowModeCarPositionLocked) {
-        self.crossImageView.hidden = NO;
-        self.crossImageView.image = crossImage;
-        self.rightBrowserBtn.hidden = YES;
-        self.rightTrafficBtn.hidden = YES;
-        self.topInfoView.routeRemianInfoView.hidden = YES;
-        self.trafficBarView.hidden = YES;
-     } else {
-        self.crossImageView.hidden = YES;
-        self.crossImageView.image = nil;
-        self.rightBrowserBtn.hidden = NO;
-        self.rightTrafficBtn.hidden = NO;
-        self.topInfoView.routeRemianInfoView.hidden = NO;
-        self.trafficBarView.hidden = NO;
-    }
+    self.crossImageView.hidden = YES;
+    self.crossImageView.image = nil;
+    self.trafficBarView.hidden = YES;
 }
 
 //返回边界Padding，来规定可见区域
@@ -494,13 +606,20 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 - (void)dealloc
 {
     DLog(@"nav view dealloc");
+    AMapNaviDriveManager *driveManager = [AMapNaviDriveManager sharedInstance];
+    [driveManager stopNavi];
+    [driveManager setDelegate:nil];
+    if (self.driveView) {
+        [driveManager removeDataRepresentative:self.driveView];
+        self.driveView.delegate = nil;
+    }
+    [driveManager removeDataRepresentative:self];
     [AMapNaviDriveManager destroyInstance];
+    self.crossImageView.image = nil;
     self.driveView = nil;
     self.topInfoView = nil;
     self.trafficBarView = nil;
     self.methodChannel = nil;
-    
-    
 }
 
 

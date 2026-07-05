@@ -76,16 +76,28 @@ class UnifiedAMapNavOptions(
         ///底部地图内容绘制区域向上偏移的高度
         val bottomContentH: Double = 100.0,
         /// 是否使用虚拟导航（模拟导航）
-        val useEmulatorNavi: Boolean = false
+        val useEmulatorNavi: Boolean = false,
+        /// 地图已规划备选路线时，选中的路线索引（0 起）
+        val selectedRouteIndex: Int = 0,
+        /// 是否按地图已规划的备选路线进行多路线导航
+        val hasPlannedRoutes: Boolean = false,
+        /// 地图选中路线的总距离（米）
+        val selectedRouteDistance: Double = 0.0,
+        /// 地图选中路线的总耗时（秒）
+        val selectedRouteDuration: Long = 0,
+        /// 地图选中路线折线中点纬度
+        val selectedRouteMidLatitude: Double = 0.0,
+        /// 地图选中路线折线中点经度
+        val selectedRouteMidLongitude: Double = 0.0
 ) {
     fun toAMapNavOption(): AMapNavOptions {
         return AMapNavOptions(
-                navType, startLocation, endLocation, bottomContentH, useEmulatorNavi
+                navType, startLocation, endLocation, bottomContentH, useEmulatorNavi, selectedRouteIndex, hasPlannedRoutes, selectedRouteDistance, selectedRouteDuration, selectedRouteMidLatitude, selectedRouteMidLongitude
         )
     }
 
     override fun toString(): String {
-        return "navType:"+ navType + " startLocation:"+ startLocation.toString() + " endLocation:"+ endLocation.toString() + " bottomH:"+ bottomContentH + " useEmulatorNavi:"+ useEmulatorNavi
+        return "navType:"+ navType + " startLocation:"+ startLocation.toString() + " endLocation:"+ endLocation.toString() + " bottomH:"+ bottomContentH + " useEmulatorNavi:"+ useEmulatorNavi + " selectedRouteIndex:"+ selectedRouteIndex + " hasPlannedRoutes:"+ hasPlannedRoutes + " selectedRouteDistance:"+ selectedRouteDistance + " selectedRouteDuration:"+ selectedRouteDuration + " selectedRouteMidLatitude:"+ selectedRouteMidLatitude + " selectedRouteMidLongitude:"+ selectedRouteMidLongitude
     }
 }
 

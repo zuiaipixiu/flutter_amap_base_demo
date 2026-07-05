@@ -93,6 +93,66 @@ class NaviView(context: Context,
     companion object {
         @JvmStatic
         var activeUseEmulatorNavi: Boolean = false
+
+        @JvmStatic
+        var activeSelectedRouteIndex: Int = 0
+
+        @JvmStatic
+        var activeHasPlannedRoutes: Boolean = false
+
+        @JvmStatic
+        var activeSelectedRouteDistance: Double = 0.0
+
+        @JvmStatic
+        var activeSelectedRouteDuration: Long = 0
+
+        @JvmStatic
+        var activeSelectedRouteMidLatitude: Double = 0.0
+
+        @JvmStatic
+        var activeSelectedRouteMidLongitude: Double = 0.0
+
+        @JvmStatic
+        fun selectPlannedRoute(mapNav: AMapNavi, result: AMapCalcRouteResult?) {
+            if (!activeHasPlannedRoutes) {
+                return
+            }
+            val routeIds = result?.routeid ?: return
+            if (routeIds.isEmpty()) {
+                return
+            }
+
+            val hasRouteMidpoint = kotlin.math.abs(activeSelectedRouteMidLatitude) > 1.0 ||
+                    kotlin.math.abs(activeSelectedRouteMidLongitude) > 1.0
+            val selectedId = if (hasRouteMidpoint) {
+                val naviPaths = mapNav.naviPaths
+                routeIds.minByOrNull { id ->
+                    val path = naviPaths[id] ?: return@minByOrNull Double.MAX_VALUE
+                    val coords = path.coordList ?: return@minByOrNull Double.MAX_VALUE
+                    if (coords.isEmpty()) {
+                        return@minByOrNull Double.MAX_VALUE
+                    }
+                    val midPoint = coords[coords.size / 2]
+                    kotlin.math.abs(midPoint.latitude - activeSelectedRouteMidLatitude) +
+                            kotlin.math.abs(midPoint.longitude - activeSelectedRouteMidLongitude)
+                } ?: routeIds[0]
+            } else if (activeSelectedRouteDistance > 0) {
+                val naviPaths = mapNav.naviPaths
+                routeIds.minByOrNull { id ->
+                    val path = naviPaths[id] ?: return@minByOrNull Long.MAX_VALUE
+                    val distanceDiff = kotlin.math.abs(path.allLength - activeSelectedRouteDistance.toInt())
+                    val durationDiff = if (activeSelectedRouteDuration > 0) {
+                        kotlin.math.abs(path.allTime - activeSelectedRouteDuration.toInt())
+                    } else {
+                        0
+                    }
+                    distanceDiff * 10L + durationDiff
+                } ?: routeIds[0]
+            } else {
+                routeIds[activeSelectedRouteIndex.coerceIn(0, routeIds.lastIndex)]
+            }
+            mapNav.selectRouteId(selectedId)
+        }
     }
 
     override fun getView(): View = view //must return the whole view otherwise it does not work
@@ -109,6 +169,12 @@ class NaviView(context: Context,
     fun setup() {
         useEmulatorNavi = naviOpts.isUseEmulatorNavi
         activeUseEmulatorNavi = useEmulatorNavi
+        activeSelectedRouteIndex = naviOpts.selectedRouteIndex
+        activeHasPlannedRoutes = naviOpts.hasPlannedRoutes
+        activeSelectedRouteDistance = naviOpts.selectedRouteDistance
+        activeSelectedRouteDuration = naviOpts.selectedRouteDuration
+        activeSelectedRouteMidLatitude = naviOpts.selectedRouteMidLatitude
+        activeSelectedRouteMidLongitude = naviOpts.selectedRouteMidLongitude
        
         navView.setAMapNaviViewListener(object : MapNaviViewListener() {
             override fun onLockMap(locked: Boolean) {
@@ -180,30 +246,17 @@ class NaviView(context: Context,
         options.isAutoDrawRoute = true
         options.isAfterRouteAutoGray = true
         options.isTrafficBarEnabled=false
+        options.isRealCrossDisplayShow = false
+        options.setModeCrossDisplayShow(false)
 
         options.routeOverlayOptions = routeOverlayOptions
         navView.viewOptions = options
 
-//        options.setTrafficBarEnabled(true)
-        //光柱
-
         trafficBarView = view.findViewById(R.id.myTrafficBar)
-        trafficBarView.setUnknownTrafficColor(Color.parseColor("#0091FF"));
-        trafficBarView.setSmoothTrafficColor(Color.parseColor("#00BA1F"));
-        trafficBarView.setSlowTrafficColor(Color.parseColor("#FFBA00"));
-        trafficBarView.setJamTrafficColor(Color.parseColor("#F31D20"));
-        trafficBarView.setVeryJamTrafficColor(Color.parseColor("#A8090B"));
-        navView.lazyTrafficProgressBarView = trafficBarView
+        trafficBarView.visibility = View.GONE
 
-//
-        //路口小图
         val myNextTurnView: NextTurnTipView = view.findViewById(R.id.myNextTurnView) as NextTurnTipView
         navView.lazyNextTurnTipView = myNextTurnView;
-
-
-//        options.setModeCrossDisplayShow(false)
-//        options.isRealCrossDisplayShow=false
-        options.setModeCrossDisplayShow(false)
 
         options.isLayoutVisible = false
 
@@ -285,14 +338,16 @@ class NaviView(context: Context,
         val tvNextDistenseUnit: TextView = view.findViewById(R.id.tvNextDistenseUnit) as TextView
 
 
-        val mZoomInIntersectionView: ZoomInIntersectionView = view.findViewById(R.id.myZoomInIntersectionView) as ZoomInIntersectionView
         val myllZoomInIntersectionView: LinearLayout = view.findViewById(R.id.myllZoomInIntersectionView) as LinearLayout
+        myllZoomInIntersectionView.visibility = View.GONE
 
 
 
         mapNav.addAMapNaviListener( object: MapNaviListener(){
 
             override fun onCalculateRouteSuccess(aMapCalcRouteResult: AMapCalcRouteResult?) {
+                NaviView.selectPlannedRoute(mapNav, aMapCalcRouteResult)
+
                 val naviType = if (useEmulatorNavi || activeUseEmulatorNavi) {
                     NaviType.EMULATOR
                 } else {
@@ -310,24 +365,10 @@ class NaviView(context: Context,
             }
 
             override fun showCross(aMapNaviCross: AMapNaviCross?) {
-                Log.e("bear","showCross aMapNaviCross " )
-                mZoomInIntersectionView.setImageBitmap(aMapNaviCross?.bitmap)
-                myllZoomInIntersectionView.visibility = View.VISIBLE
-
+                myllZoomInIntersectionView.visibility = View.GONE
             }
 
             override fun showModeCross(aMapModelCross: AMapModelCross?) {
-//                Log.e("bear","showModeCross aMapModelCross21 " + aMapModelCross?.picBuf1.toString()   )
-//                modeCrossOverlay.createModelCrossBitMap(aMapModelCross!!.picBuf1) { bitmap, _ -> mZoomInIntersectionView.setImageBitmap(bitmap) }
-
-
-//                modeCrossOverlay.createModelCrossBitMap(aMapModelCross?.picBuf1, object : AMapModeCrossOverlay.OnCreateBitmapFinish {
-//                  override  fun onGenerateComplete(bitmap: Bitmap?, i: Int) {
-//                      Log.e("bear","showModeCross aMapModelCross " + bitmap.toString()   )
-//                        mZoomInIntersectionView.setImageBitmap(bitmap)
-//                    }
-//                })
-
                 myllZoomInIntersectionView.visibility = View.GONE
             }
 
@@ -421,14 +462,21 @@ class NaviView(context: Context,
         val end = NaviLatLng(endLocation.latitude, endLocation.longitude)
 
         when (type) {
-            AMapNavOptions.NAVI_TYPE_DRIVER ->
-                mapNav?.calculateDriveRoute(listOf(start), listOf(end), null, PathPlanningStrategy.DRIVING_SHORTEST_DISTANCE)
+            AMapNavOptions.NAVI_TYPE_DRIVER -> {
+                mapNav.setMultipleRouteNaviMode(activeHasPlannedRoutes)
+                val strategy = if (activeHasPlannedRoutes) {
+                    PathPlanningStrategy.DRIVING_MULTIPLE_ROUTES_DEFAULT
+                } else {
+                    PathPlanningStrategy.DRIVING_SHORTEST_DISTANCE
+                }
+                mapNav.calculateDriveRoute(listOf(start), listOf(end), null, strategy)
+            }
 
             AMapNavOptions.NAVI_TYPE_RIDE ->
-                mapNav?.calculateRideRoute(start, end)
+                mapNav.calculateRideRoute(start, end)
 
             AMapNavOptions.NAVI_TYPE_WALK ->
-                mapNav?.calculateWalkRoute(start, end)
+                mapNav.calculateWalkRoute(start, end)
         }
     }
 
@@ -439,6 +487,8 @@ class NaviView(context: Context,
             return
         }
         disposed = true
+        mapNav.stopNavi()
+        mapNav.stopSpeak()
         navView.onDestroy()
         registrar.activity()?.application?.unregisterActivityLifecycleCallbacks(this)
     }

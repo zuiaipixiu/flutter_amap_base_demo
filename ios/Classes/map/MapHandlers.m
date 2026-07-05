@@ -173,6 +173,38 @@
 
 @end
 
+@implementation GetUserLocation {
+    MAMapView *_mapView;
+}
+
+- (NSObject<MapMethodHandler> *)initWith:(MAMapView *)mapView {
+    _mapView = mapView;
+    return self;
+}
+
+- (void)onMethodCall:(FlutterMethodCall *)call :(FlutterResult)result {
+    if (!_mapView.showsUserLocation) {
+        _mapView.showsUserLocation = YES;
+    }
+
+    MAUserLocation *userLocation = _mapView.userLocation;
+    CLLocation *location = userLocation.location;
+    if (location == nil) {
+        result([FlutterError errorWithCode:@"NO_LOCATION"
+                                   message:@"地图蓝点位置尚未就绪"
+                                   details:nil]);
+        return;
+    }
+
+    CLLocationCoordinate2D coor = location.coordinate;
+    LatLng *latlng = [LatLng new];
+    latlng.latitude = coor.latitude;
+    latlng.longitude = coor.longitude;
+    result([latlng mj_JSONString]);
+}
+
+@end
+
 @implementation ClearMap {
     MAMapView *_mapView;
 }

@@ -33,6 +33,12 @@ class NaviMapController {
         'navType': _navType,
         'bottomContentH': _bottomContentH,
         'useEmulatorNavi': _useEmulatorNavi,
+        'selectedRouteIndex': navOptions.selectedRouteIndex,
+        'hasPlannedRoutes': navOptions.hasPlannedRoutes,
+        'selectedRouteDistance': navOptions.selectedRouteDistance,
+        'selectedRouteDuration': navOptions.selectedRouteDuration,
+        'selectedRouteMidLatitude': navOptions.selectedRouteMidLatitude,
+        'selectedRouteMidLongitude': navOptions.selectedRouteMidLongitude,
       },
     );
   }
