@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_amap_base/amap_base.dart';
 
@@ -59,6 +60,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   bool _mapReady = false;
   bool _naviReady = false;
   bool _sdkReady = false;
+  bool _useEmulatorNavi = kDebugMode;
   StreamSubscription<Location>? _continuousLocationSubscription;
 
   LocationClientOptions get _singleLocationOptions => LocationClientOptions(
@@ -207,7 +209,11 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
       onMapNavViewCreated: (controller) {
         _naviController = controller;
         _naviReady = true;
-        _setStatus('虚拟导航已启动，连续定位至$_destinationName');
+        _setStatus(
+          _useEmulatorNavi
+              ? '虚拟导航已启动，连续定位至$_destinationName'
+              : 'GPS 导航已启动，连续定位至$_destinationName',
+        );
       },
     );
   }
@@ -255,6 +261,18 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
           ),
         ),
       ],
+    );
+  }
+
+  AMapNavOptions _createNavOptions({
+    required LatLng start,
+    required LatLng end,
+  }) {
+    return AMapNavOptions(
+      startLocation: start,
+      endLocation: end,
+      bottomContentH: _bottomCardHeight,
+      useEmulatorNavi: _useEmulatorNavi,
     );
   }
 
@@ -328,8 +346,36 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
               ],
             ),
             const SizedBox(height: 14),
+            if (kDebugMode && !_showEmbeddedNavi)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                title: const Text(
+                  '虚拟导航（Debug）',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  _useEmulatorNavi
+                      ? '模拟行驶，不依赖真实 GPS 移动'
+                      : 'GPS 真实导航，需实际移动位置',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+                value: _useEmulatorNavi,
+                onChanged: _isStartingNavi
+                    ? null
+                    : (bool value) {
+                        setState(() {
+                          _useEmulatorNavi = value;
+                        });
+                      },
+              ),
             Text(
-              '说明：定位按钮为单点定位并居中地图；「嵌入式导航」使用连续定位并开启虚拟导航至$_destinationName。',
+              _useEmulatorNavi
+                  ? '说明：定位按钮为单点定位并居中地图；「嵌入式导航」使用连续定位并开启虚拟导航至$_destinationName。'
+                  : '说明：定位按钮为单点定位并居中地图；「嵌入式导航」使用连续定位并开启 GPS 真实导航至$_destinationName。',
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 13,
@@ -487,12 +533,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
         return;
       }
 
-      _navOptions = AMapNavOptions(
-        startLocation: start,
-        endLocation: end,
-        bottomContentH: _bottomCardHeight,
-        useEmulatorNavi: true,
-      );
+      _navOptions = _createNavOptions(start: start, end: end);
 
       if (!mounted) {
         return;
@@ -502,7 +543,11 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
         _showEmbeddedNavi = true;
         _naviReady = false;
       });
-      _setStatus('虚拟导航已启动，连续定位至$_destinationName');
+      _setStatus(
+        _useEmulatorNavi
+            ? '虚拟导航已启动，连续定位至$_destinationName'
+            : 'GPS 导航已启动，连续定位至$_destinationName',
+      );
 
       unawaited(
         _resolveDestinationLatLng().then((LatLng preciseEnd) {
@@ -510,12 +555,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
             return;
           }
           _destinationLatLng = preciseEnd;
-          _navOptions = AMapNavOptions(
-            startLocation: start,
-            endLocation: preciseEnd,
-            bottomContentH: _bottomCardHeight,
-            useEmulatorNavi: true,
-          );
+          _navOptions = _createNavOptions(start: start, end: preciseEnd);
           final NaviMapController? controller = _naviController;
           if (_naviReady && controller != null) {
             unawaited(controller.changeMapRouteNaviWithInfo(_navOptions!));
@@ -759,12 +799,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
       }
 
       final LatLng end = await _resolveDestinationLatLng();
-      final AMapNavOptions navOptions = AMapNavOptions(
-        startLocation: start,
-        endLocation: end,
-        bottomContentH: _bottomCardHeight,
-        useEmulatorNavi: true,
-      );
+      final AMapNavOptions navOptions = _createNavOptions(start: start, end: end);
       _navOptions = navOptions;
       await controller.changeMapRouteNaviWithInfo(navOptions);
       await _planDriveRoute(
