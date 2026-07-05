@@ -156,9 +156,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
             child: _sdkReady
                 ? (_isSwitchingPlatformView
                     ? _buildSdkLoadingView()
-                    : (_showEmbeddedNavi
-                        ? _buildEmbeddedNavi()
-                        : _buildMap()))
+                    : (_showEmbeddedNavi ? _buildEmbeddedNavi() : _buildMap()))
                 : _buildSdkLoadingView(),
           ),
           Positioned(
@@ -410,14 +408,14 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
   Widget _buildBottomCard() {
     final DrivePath? selectedPath = _selectedDrivePath;
-    final String distanceText = _showEmbeddedNavi &&
-            _liveNavRemainDistanceMeters != null
-        ? _formatRemainDistance(_liveNavRemainDistanceMeters!)
-        : _formatDistanceWithUnit(selectedPath?.totalDistance);
-    final String durationText = _showEmbeddedNavi &&
-            _liveNavRemainTimeSeconds != null
-        ? _formatRemainDuration(_liveNavRemainTimeSeconds!)
-        : _formatDuration(selectedPath?.totalDuration);
+    final String distanceText =
+        _showEmbeddedNavi && _liveNavRemainDistanceMeters != null
+            ? _formatRemainDistance(_liveNavRemainDistanceMeters!)
+            : _formatDistanceWithUnit(selectedPath?.totalDistance);
+    final String durationText =
+        _showEmbeddedNavi && _liveNavRemainTimeSeconds != null
+            ? _formatRemainDuration(_liveNavRemainTimeSeconds!)
+            : _formatDuration(selectedPath?.totalDuration);
 
     return Container(
       height: _bottomCardHeight,
@@ -485,9 +483,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
-                  _useEmulatorNavi
-                      ? '模拟行驶，不依赖真实 GPS 移动'
-                      : 'GPS 真实导航，需实际移动位置',
+                  _useEmulatorNavi ? '模拟行驶，不依赖真实 GPS 移动' : 'GPS 真实导航，需实际移动位置',
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 12,
@@ -526,7 +522,8 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     if (_routePathOptions.isEmpty) {
       return null;
     }
-    final int index = _selectedRouteIndex.clamp(0, _routePathOptions.length - 1);
+    final int index =
+        _selectedRouteIndex.clamp(0, _routePathOptions.length - 1);
     return _routePathOptions[index];
   }
 
@@ -620,9 +617,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
         (Location location) {
           final num? latitude = location.latitude;
           final num? longitude = location.longitude;
-          if (latitude != null &&
-              longitude != null &&
-              !completer.isCompleted) {
+          if (latitude != null && longitude != null && !completer.isCompleted) {
             completer.complete(
               LatLng(latitude.toDouble(), longitude.toDouble()),
             );
@@ -726,9 +721,8 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
       final String code = error.code;
       final String? message = error.message;
       if (code == '1008' || (message?.contains('MD5') ?? false)) {
-        final String bundleHint = _appBundleId == null
-            ? ''
-            : '（当前 Bundle ID: $_appBundleId）';
+        final String bundleHint =
+            _appBundleId == null ? '' : '（当前 Bundle ID: $_appBundleId）';
         return '高德 Key 与 Bundle ID 不匹配(1008)$bundleHint，请在控制台重新绑定';
       }
       if (code == '1002') {
@@ -744,9 +738,8 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
     final String message = error.toString();
     if (message.contains('1008') || message.contains('MD5')) {
-      final String bundleHint = _appBundleId == null
-          ? ''
-          : '（当前 Bundle ID: $_appBundleId）';
+      final String bundleHint =
+          _appBundleId == null ? '' : '（当前 Bundle ID: $_appBundleId）';
       return '高德 Key 与 Bundle ID 不匹配(1008)$bundleHint，请在控制台重新绑定';
     }
     if (message.contains('FormatException')) {
@@ -769,7 +762,8 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
         text.contains('MD5');
   }
 
-  Future<({List<DrivePath> paths, String? error})> _fetchThreeRouteAlternatives({
+  Future<({List<DrivePath> paths, String? error})>
+      _fetchThreeRouteAlternatives({
     required LatLng from,
     required LatLng to,
   }) async {
@@ -1177,9 +1171,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   Future<void> _renderDestinationMarker({bool clear = true}) async {
     final AMapController? controller = _mapController;
     final LatLng? endPoint = _plannedDestinationLatLng;
-    if (controller == null ||
-        endPoint == null ||
-        _routePathOptions.isEmpty) {
+    if (controller == null || endPoint == null || _routePathOptions.isEmpty) {
       return;
     }
 
@@ -1253,8 +1245,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
       if (paths.isEmpty) {
         _setStatus(
-          planResult.error ??
-              '未能规划备选线路（最多$_maxRouteCount条），请检查网络后重试',
+          planResult.error ?? '未能规划备选线路（最多$_maxRouteCount条），请检查网络后重试',
         );
         return;
       }
@@ -1328,8 +1319,9 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
     final LatLng routeStart =
         _driveRouteResult?.startPos ?? _mapLocateLatLng ?? _defaultMapCenter;
-    final LatLng routeEnd =
-        _driveRouteResult?.targetPos ?? _destinationLatLng ?? _destinationFallback;
+    final LatLng routeEnd = _driveRouteResult?.targetPos ??
+        _destinationLatLng ??
+        _destinationFallback;
     await controller.clearMap();
 
     for (int index = 0; index < _routePathOptions.length; index++) {
@@ -1385,7 +1377,8 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
       final LatLng end = _driveRouteResult?.targetPos ??
           _destinationLatLng ??
           await _resolveDestinationLatLng();
-      final AMapNavOptions navOptions = _createNavOptions(start: start, end: end);
+      final AMapNavOptions navOptions =
+          _createNavOptions(start: start, end: end);
       _navOptions = navOptions;
       await controller.changeMapRouteNaviWithInfo(navOptions);
       if (_routePathOptions.isEmpty) {
