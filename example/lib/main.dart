@@ -27,7 +27,8 @@ class AMapAllInOneExamplePage extends StatefulWidget {
   const AMapAllInOneExamplePage({super.key});
 
   @override
-  State<AMapAllInOneExamplePage> createState() => _AMapAllInOneExamplePageState();
+  State<AMapAllInOneExamplePage> createState() =>
+      _AMapAllInOneExamplePageState();
 }
 
 class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
@@ -38,17 +39,20 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   static const double _bottomCardHeight = 220;
 
   final AMapSearch _search = AMapSearch();
+  final AMapLocation _location = AMapLocation();
 
   AMapController? _mapController;
   NaviMapController? _naviController;
 
   DriveRouteResult? _driveRouteResult;
+  LatLng? _currentLatLng;
   String _status = '等待开始';
   bool _isPlanning = false;
   bool _showEmbeddedNavi = false;
   bool _mapReady = false;
   bool _naviReady = false;
   bool _sdkReady = false;
+  bool _isLocating = false;
 
   @override
   void initState() {
@@ -123,8 +127,8 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
       onAMapViewCreated: (controller) {
         _mapController = controller;
         _mapReady = true;
-        _setStatus('地图已创建，可以开始规划路线');
-        unawaited(_renderBaseMarkers());
+        _setStatus('地图已创建，正在定位当前位置...');
+        unawaited(_onMapReady());
       },
     );
   }
@@ -227,22 +231,28 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
               spacing: 12,
               runSpacing: 12,
               children: [
-              FilledButton(
-                onPressed: _sdkReady && _mapReady && !_isPlanning ? _planDriveRoute : null,
-                child: Text(_isPlanning ? '规划中...' : '路线规划'),
-              ),
-              FilledButton.tonal(
-                onPressed: _sdkReady && _mapReady ? _drawRouteOnMap : null,
-                child: const Text('绘制路线'),
-              ),
-              FilledButton.tonal(
-                onPressed: _sdkReady ? (_showEmbeddedNavi ? _refreshEmbeddedNavi : _showNaviView) : null,
-                child: Text(_showEmbeddedNavi ? '刷新导航' : '嵌入式导航'),
-              ),
-              FilledButton.tonal(
-                onPressed: _sdkReady ? _startExternalNavi : null,
-                child: const Text('调起原生导航'),
-              ),
+                FilledButton(
+                  onPressed: _sdkReady && _mapReady && !_isPlanning
+                      ? _planDriveRoute
+                      : null,
+                  child: Text(_isPlanning ? '规划中...' : '路线规划'),
+                ),
+                FilledButton.tonal(
+                  onPressed: _sdkReady && _mapReady ? _drawRouteOnMap : null,
+                  child: const Text('绘制路线'),
+                ),
+                FilledButton.tonal(
+                  onPressed: _sdkReady
+                      ? (_showEmbeddedNavi
+                          ? _refreshEmbeddedNavi
+                          : _showNaviView)
+                      : null,
+                  child: Text(_showEmbeddedNavi ? '刷新导航' : '嵌入式导航'),
+                ),
+                FilledButton.tonal(
+                  onPressed: _sdkReady ? _startExternalNavi : null,
+                  child: const Text('调起原生导航'),
+                ),
                 OutlinedButton(
                   onPressed: _resetToMap,
                   child: const Text('回到地图'),
@@ -262,6 +272,69 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _onMapReady() async {
+    await _renderBaseMarkers();
+    await _showCurrentLocationAtCenter();
+  }
+
+  Future<void> _showCurrentLocationAtCenter() async {
+    final AMapController? controller = _mapController;
+    if (controller == null || _isLocating) {
+      return;
+    }
+
+    _isLocating = true;
+    try {
+      final bool granted = await Permissions().requestPermission();
+      if (!granted) {
+        _setStatus('定位权限未授予，暂时无法展示当前位置');
+        return;
+      }
+
+      await controller.setMyLocationStyle(
+        MyLocationStyle(
+          myLocationType: LOCATION_TYPE_LOCATE,
+          showMyLocation: true,
+          showsAccuracyRing: true,
+          showsHeadingIndicator: false,
+        ),
+      );
+
+      final location = await _location.getLocation(
+        LocationClientOptions(
+          isOnceLocation: true,
+          isNeedAddress: true,
+          locationMode: LocationMode.Hight_Accuracy,
+          locationPurpose: AMapLocationPurpose.Transport,
+          locationTimeout: 10000,
+          reGeocodeTimeout: 10000,
+        ),
+      );
+
+      final num? latitude = location.latitude;
+      final num? longitude = location.longitude;
+      if (latitude == null || longitude == null) {
+        _setStatus('已开启定位图层，但未拿到有效坐标');
+        return;
+      }
+
+      final currentLatLng = LatLng(latitude.toDouble(), longitude.toDouble());
+      _currentLatLng = currentLatLng;
+
+      await controller.setPosition(
+        target: currentLatLng,
+        zoom: 16,
+      );
+
+      _setStatus('已定位到当前位置，并移动到屏幕中心');
+    } catch (e) {
+      _setStatus('当前位置展示失败: $e');
+    } finally {
+      _isLocating = false;
+      unawaited(_location.stopLocate());
+    }
   }
 
   Widget _buildMetric(String title, String value) {
@@ -305,13 +378,15 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
       return;
     }
 
+    final LatLng routeStart = _currentLatLng ?? _start;
+
     await controller.addMarkers(
       [
         MarkerOptions(
-          position: _start,
+          position: routeStart,
           icon: 'images/amap_start.png',
           title: '起点',
-          snippet: '天安门附近',
+          snippet: _currentLatLng == null ? '天安门附近' : '当前位置',
         ),
         MarkerOptions(
           position: _end,
@@ -325,7 +400,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     );
 
     await controller.zoomToSpan(
-      const [_start, _end],
+      [routeStart, _end],
       paddingT: 120,
       paddingL: 80,
       paddingB: 320,
@@ -341,7 +416,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
     try {
       final result = await _search.calculateDriveRoute(
-        RoutePlanParam(from: _start, to: _end),
+        RoutePlanParam(from: _currentLatLng ?? _start, to: _end),
       );
 
       _driveRouteResult = result;
@@ -360,8 +435,9 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
   Future<void> _drawRouteOnMap() async {
     final AMapController? controller = _mapController;
-    final DrivePath? path =
-        _driveRouteResult?.paths?.isNotEmpty == true ? _driveRouteResult!.paths!.first : null;
+    final DrivePath? path = _driveRouteResult?.paths?.isNotEmpty == true
+        ? _driveRouteResult!.paths!.first
+        : null;
     if (controller == null || path == null) {
       _setStatus('暂无可绘制路线，请先规划');
       return;
