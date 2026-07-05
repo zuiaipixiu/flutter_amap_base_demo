@@ -1,0 +1,62 @@
+PODS:
+  - AMapFoundation (1.9.0)
+  - AMapLocation (2.12.0):
+    - AMapFoundation (>= 1.9.0)
+  - AMapNavi (11.2.000):
+    - AMapFoundation (>= 1.9.0)
+  - AMapSearch (9.8.0):
+    - AMapFoundation (>= 1.9.0)
+  - device_info_plus (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - flutter_amap_base (1.0.0):
+    - AMapFoundation
+    - AMapLocation
+    - AMapNavi
+    - AMapSearch
+    - Flutter
+    - Masonry
+    - MJExtension
+    - NudeIn
+  - Masonry (1.1.0)
+  - MJExtension (3.4.2)
+  - NudeIn (1.2.8)
+
+DEPENDENCIES:
+  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_amap_base (from `.symlinks/plugins/flutter_amap_base/ios`)
+
+SPEC REPOS:
+  trunk:
+    - AMapFoundation
+    - AMapLocation
+    - AMapNavi
+    - AMapSearch
+    - Masonry
+    - MJExtension
+    - NudeIn
+
+EXTERNAL SOURCES:
+  device_info_plus:
+    :path: ".symlinks/plugins/device_info_plus/ios"
+  Flutter:
+    :path: Flutter
+  flutter_amap_base:
+    :path: ".symlinks/plugins/flutter_amap_base/ios"
+
+SPEC CHECKSUMS:
+  AMapFoundation: 5f01fcabd1e591967e52178d2d96dac843396285
+  AMapLocation: 51549dc73f5bfa8806c33857ad2079fa6215bb49
+  AMapNavi: 3c55c45e1653af0dbfd2a0c760bf39741e860cb1
+  AMapSearch: ec339fc3cf772d5ff657f02397888391b4b1bde8
+  device_info_plus: 335f3ce08d2e174b9fdc3db3db0f4e3b1f66bd89
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_amap_base: 564d73ac8288f700966cf8bf1024881e58d317bf
+  Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
+  MJExtension: e97d164cb411aa9795cf576093a1fa208b4a8dd8
+  NudeIn: e428b516a60a241d47c9d8882a8a00d0f42cfcb4
+
+PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+
+COCOAPODS: 1.16.2
