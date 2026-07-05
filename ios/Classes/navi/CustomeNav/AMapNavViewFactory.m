@@ -166,8 +166,10 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
         //driveManager 请在 dealloc 函数中执行 [AMapNaviDriveManager destroyInstance] 来销毁单例
         [[AMapNaviDriveManager sharedInstance] setDelegate:self];
         [[AMapNaviDriveManager sharedInstance] setIsUseInternalTTS:YES];
-        
-        [[AMapNaviDriveManager sharedInstance] setAllowsBackgroundLocationUpdates:YES];
+
+        // 示例仅前台导航，未开启 Background Modes -> Location updates，
+        // 开启后台定位会导致 CLLocationManager 断言崩溃。
+        [[AMapNaviDriveManager sharedInstance] setAllowsBackgroundLocationUpdates:NO];
         [[AMapNaviDriveManager sharedInstance] setPausesLocationUpdatesAutomatically:NO];
         
         // 将 self、driveView 添加为导航数据的 Representative。
@@ -238,6 +240,10 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
           NSString *endLocationJson = (NSString *) paramDic[@"endLocation"];
           LatLng *endParamPoint = [LatLng mj_objectWithKeyValues:endLocationJson];
           
+          NSNumber *useEmulatorNavi = paramDic[@"useEmulatorNavi"];
+          if (useEmulatorNavi != nil) {
+              self.options.useEmulatorNavi = useEmulatorNavi.boolValue;
+          }
           
           AMapNaviPoint *startParamNavPoint = [AMapNaviPoint locationWithLatitude:startParamPoint.latitude longitude:startParamPoint.longitude];
           AMapNaviPoint *endParamNavPoint   = [AMapNaviPoint locationWithLatitude:endParamPoint.latitude longitude:endParamPoint.longitude];
@@ -312,8 +318,12 @@ static NSString *mapNavChannelName = @"me.yohom/map_nav";
 - (void)driveManagerOnCalculateRouteSuccess:(AMapNaviDriveManager *)driveManager {
     DLog(@"onCalculateRouteSuccess");
     
-    //算路成功后开始导航
-    [[AMapNaviDriveManager sharedInstance] startGPSNavi];
+    //算路成功后开始导航（虚拟导航 / GPS 导航）
+    if (self.options.useEmulatorNavi) {
+        [[AMapNaviDriveManager sharedInstance] startEmulatorNavi];
+    } else {
+        [[AMapNaviDriveManager sharedInstance] startGPSNavi];
+    }
 }
 
 #pragma mark - AMapNaviDriveDataRepresentable

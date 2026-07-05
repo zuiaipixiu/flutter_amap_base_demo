@@ -21,6 +21,7 @@ class NaviMapController {
 
     final _navType = navOptions.navType;
     final _bottomContentH = navOptions.bottomContentH;
+    final _useEmulatorNavi = navOptions.useEmulatorNavi;
 
     L.p('方法changeMapRouteNaviWithInfo dart端参数: navInfoJson -> $_navInfoJson');
 
@@ -31,6 +32,7 @@ class NaviMapController {
         'endLocation': _endLocation,
         'navType': _navType,
         'bottomContentH': _bottomContentH,
+        'useEmulatorNavi': _useEmulatorNavi,
       },
     );
   }

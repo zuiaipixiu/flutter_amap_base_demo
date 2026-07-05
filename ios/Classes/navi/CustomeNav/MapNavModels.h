@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// 底部高度
 @property(nonatomic) CGFloat bottomContentH;
 
+/// 是否使用虚拟导航（模拟导航）
+@property(nonatomic) BOOL useEmulatorNavi;
+
 
 - (NSString *)description;
 

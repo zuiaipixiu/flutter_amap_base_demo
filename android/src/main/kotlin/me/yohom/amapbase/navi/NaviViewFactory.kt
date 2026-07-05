@@ -88,6 +88,12 @@ class NaviView(context: Context,
     private val registrarActivityHashCode: Int = registrar.activity().hashCode()
     private val naviOpts: AMapNavOptions = naviOptions;
     private var trafficBarView = TrafficProgressBar(context)
+    private var useEmulatorNavi: Boolean = naviOptions.isUseEmulatorNavi
+
+    companion object {
+        @JvmStatic
+        var activeUseEmulatorNavi: Boolean = false
+    }
 
     override fun getView(): View = view //must return the whole view otherwise it does not work
 
@@ -101,6 +107,8 @@ class NaviView(context: Context,
         return BitmapDescriptorFactory.fromAsset(registrar.lookupKeyForAsset(asset, "flutter_amap_base"))
     }
     fun setup() {
+        useEmulatorNavi = naviOpts.isUseEmulatorNavi
+        activeUseEmulatorNavi = useEmulatorNavi
        
         navView.setAMapNaviViewListener(object : MapNaviViewListener() {
             override fun onLockMap(locked: Boolean) {
@@ -285,11 +293,15 @@ class NaviView(context: Context,
         mapNav.addAMapNaviListener( object: MapNaviListener(){
 
             override fun onCalculateRouteSuccess(aMapCalcRouteResult: AMapCalcRouteResult?) {
-                mapNav.startNavi(NaviType.GPS)
-//                mapNav.startNavi(NaviType.EMULATOR)
+                val naviType = if (useEmulatorNavi || activeUseEmulatorNavi) {
+                    NaviType.EMULATOR
+                } else {
+                    NaviType.GPS
+                }
+                mapNav.startNavi(naviType)
                 mapNav.startSpeak()
 
-                Log.e("onCalculateRouteSuccess", "开始导航======》")
+                Log.e("onCalculateRouteSuccess", "开始导航(${naviType.name})======》")
 
             }
 

@@ -32,8 +32,11 @@ class AMapAllInOneExamplePage extends StatefulWidget {
 }
 
 class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
-  static const LatLng _start = LatLng(39.908823, 116.39747);
-  static const LatLng _end = LatLng(39.990459, 116.481476);
+  static const LatLng _defaultMapCenter = LatLng(39.091090, 117.301350);
+  static const LatLng _destinationFallback = LatLng(39.091090, 117.301350);
+  static const String _destinationName = '榕洋金城';
+  static const String _destinationAddress = '天津市东丽区利津路1号';
+  static const String _destinationCity = '天津';
   static const String _iosAmapKey = 'a6ea7fe36f8f7e55d5331d68d84f6351';
 
   static const double _bottomCardHeight = 220;
@@ -45,13 +48,38 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   NaviMapController? _naviController;
 
   DriveRouteResult? _driveRouteResult;
-  LatLng? _currentLatLng;
+  LatLng? _mapLocateLatLng;
+  LatLng? _naviLocateLatLng;
+  LatLng? _destinationLatLng;
+  AMapNavOptions? _navOptions;
   String _status = '等待开始';
   bool _isPlanning = false;
+  bool _isStartingNavi = false;
   bool _showEmbeddedNavi = false;
   bool _mapReady = false;
   bool _naviReady = false;
   bool _sdkReady = false;
+  StreamSubscription<Location>? _continuousLocationSubscription;
+
+  LocationClientOptions get _singleLocationOptions => LocationClientOptions(
+        isOnceLocation: true,
+        isNeedAddress: false,
+        locationMode: LocationMode.Hight_Accuracy,
+        locationPurpose: AMapLocationPurpose.Transport,
+        locationTimeout: 10000,
+        reGeocodeTimeout: 3000,
+      );
+
+  LocationClientOptions get _continuousLocationOptions => LocationClientOptions(
+        isOnceLocation: false,
+        isNeedAddress: false,
+        locationMode: LocationMode.Hight_Accuracy,
+        locationPurpose: AMapLocationPurpose.Transport,
+        interval: 2000,
+        locatingWithReGeocode: false,
+        locationTimeout: 10000,
+        reGeocodeTimeout: 3000,
+      );
 
   @override
   void initState() {
@@ -61,6 +89,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
   @override
   void dispose() {
+    unawaited(_stopContinuousLocation());
     _mapController?.dispose();
     _naviController?.destroyCustomeNavi();
     _naviController?.dispose();
@@ -148,8 +177,8 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
         compassEnabled: true,
         scaleControlsEnabled: true,
         camera: CameraPosition(
-          target: _start,
-          zoom: 12,
+          target: _defaultMapCenter,
+          zoom: 14,
         ),
       ),
       onAMapViewCreated: (controller) {
@@ -162,16 +191,23 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   }
 
   Widget _buildEmbeddedNavi() {
+    final AMapNavOptions? navOptions = _navOptions;
+    if (navOptions == null) {
+      return _buildSdkLoadingView();
+    }
+
     return AMapNavView(
-      amapNavOptions: const AMapNavOptions(
-        startLocation: _start,
-        endLocation: _end,
-        bottomContentH: _bottomCardHeight,
+      key: ValueKey<String>(
+        '${navOptions.startLocation.latitude},'
+        '${navOptions.startLocation.longitude}->'
+        '${navOptions.endLocation.latitude},'
+        '${navOptions.endLocation.longitude}',
       ),
+      amapNavOptions: navOptions,
       onMapNavViewCreated: (controller) {
         _naviController = controller;
         _naviReady = true;
-        _setStatus('嵌入式导航已创建');
+        _setStatus('虚拟导航已启动，连续定位至$_destinationName');
       },
     );
   }
@@ -270,16 +306,20 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
                   child: const Text('绘制路线'),
                 ),
                 FilledButton.tonal(
-                  onPressed: _sdkReady
+                  onPressed: _sdkReady && !_isStartingNavi
                       ? (_showEmbeddedNavi
                           ? _refreshEmbeddedNavi
-                          : _showNaviView)
+                          : _startEmbeddedNavi)
                       : null,
-                  child: Text(_showEmbeddedNavi ? '刷新导航' : '嵌入式导航'),
+                  child: Text(
+                    _showEmbeddedNavi
+                        ? '刷新导航'
+                        : (_isStartingNavi ? '启动中...' : '嵌入式导航'),
+                  ),
                 ),
                 FilledButton.tonal(
                   onPressed: _sdkReady ? _startExternalNavi : null,
-                  child: const Text('调起原生导航'),
+                  child: Text('调起原生导航至$_destinationName'),
                 ),
                 OutlinedButton(
                   onPressed: _resetToMap,
@@ -289,7 +329,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
             ),
             const SizedBox(height: 14),
             Text(
-              '说明：这个示例把地图、驾车路线规划、嵌入式导航和底部卡片放在一个文件里，方便直接参考接入方式。',
+              '说明：定位按钮为单点定位并居中地图；「嵌入式导航」使用连续定位并开启虚拟导航至$_destinationName。',
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 13,
@@ -303,16 +343,212 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   }
 
   Future<void> _onMapReady() async {
+    unawaited(_resolveDestinationLatLng());
     await _renderBaseMarkers();
+  }
+
+  Future<void> _stopContinuousLocation() async {
+    await _continuousLocationSubscription?.cancel();
+    _continuousLocationSubscription = null;
+    await _location.stopLocate();
+  }
+
+  void _updateNaviLocateLatLng(Location location) {
+    final num? latitude = location.latitude;
+    final num? longitude = location.longitude;
+    if (latitude == null || longitude == null) {
+      return;
+    }
+    _naviLocateLatLng = LatLng(latitude.toDouble(), longitude.toDouble());
+  }
+
+  Future<LatLng?> _performSingleLocation() async {
+    try {
+      final Location location =
+          await _location.getLocation(_singleLocationOptions);
+      final num? latitude = location.latitude;
+      final num? longitude = location.longitude;
+      if (latitude != null && longitude != null) {
+        _mapLocateLatLng = LatLng(latitude.toDouble(), longitude.toDouble());
+        return _mapLocateLatLng;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<LatLng?> _startNaviContinuousLocationAndWaitFirstFix({
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    await _stopContinuousLocation();
+    _naviLocateLatLng = null;
+
+    final completer = Completer<LatLng>();
+    final Stream<Location> locationStream =
+        await _location.startLocate(_continuousLocationOptions);
+
+    _continuousLocationSubscription = locationStream.listen(
+      (Location location) {
+        _updateNaviLocateLatLng(location);
+        if (!completer.isCompleted && _naviLocateLatLng != null) {
+          completer.complete(_naviLocateLatLng);
+        }
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        if (!completer.isCompleted) {
+          completer.completeError(error, stackTrace);
+        }
+      },
+    );
+
+    try {
+      return await completer.future.timeout(timeout);
+    } on TimeoutException {
+      if (_naviLocateLatLng != null) {
+        return _naviLocateLatLng;
+      }
+      rethrow;
+    }
+  }
+
+  Future<LatLng> _resolveDestinationLatLng({bool allowNetwork = true}) async {
+    if (_destinationLatLng != null) {
+      return _destinationLatLng!;
+    }
+
+    if (!allowNetwork) {
+      _destinationLatLng = _destinationFallback;
+      return _destinationFallback;
+    }
+
+    try {
+      final GeocodeResult geocodeResult = await _search
+          .searchGeocode(
+            '$_destinationAddress$_destinationName',
+            _destinationCity,
+          )
+          .timeout(const Duration(seconds: 8));
+      final LatLng? geocodePoint =
+          geocodeResult.geocodeAddressList?.firstOrNull?.latLng;
+      if (geocodePoint != null) {
+        _destinationLatLng = geocodePoint;
+        return geocodePoint;
+      }
+    } catch (_) {}
+
+    try {
+      final PoiResult poiResult = await _search
+          .searchPoi(
+            PoiSearchQuery(
+              query: _destinationName,
+              city: _destinationCity,
+              cityLimit: true,
+              pageSize: 1,
+            ),
+          )
+          .timeout(const Duration(seconds: 8));
+      final PoiItem? poi = poiResult.pois?.firstOrNull;
+      final LatLng? poiPoint = poi?.latLonPoint ?? poi?.enter;
+      if (poiPoint != null) {
+        _destinationLatLng = poiPoint;
+        return poiPoint;
+      }
+    } catch (_) {}
+
+    _destinationLatLng = _destinationFallback;
+    return _destinationFallback;
+  }
+
+  Future<void> _startEmbeddedNavi() async {
+    if (_isStartingNavi) {
+      return;
+    }
+
+    setState(() {
+      _isStartingNavi = true;
+    });
+    _setStatus('正在准备导航至$_destinationName...');
+
+    try {
+      final bool granted = await Permissions()
+          .requestPermission()
+          .timeout(const Duration(seconds: 30), onTimeout: () => false);
+      if (!granted) {
+        _setStatus('需要定位权限才能开始导航');
+        return;
+      }
+
+      final LatLng end =
+          await _resolveDestinationLatLng(allowNetwork: false);
+      _setStatus('连续定位中，等待当前位置...');
+      final LatLng? start = await _startNaviContinuousLocationAndWaitFirstFix();
+      if (start == null) {
+        _setStatus('无法获取当前位置，请检查定位权限后重试');
+        await _stopContinuousLocation();
+        return;
+      }
+
+      _navOptions = AMapNavOptions(
+        startLocation: start,
+        endLocation: end,
+        bottomContentH: _bottomCardHeight,
+        useEmulatorNavi: true,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _showEmbeddedNavi = true;
+        _naviReady = false;
+      });
+      _setStatus('虚拟导航已启动，连续定位至$_destinationName');
+
+      unawaited(
+        _resolveDestinationLatLng().then((LatLng preciseEnd) {
+          if (_destinationLatLng == preciseEnd || !mounted) {
+            return;
+          }
+          _destinationLatLng = preciseEnd;
+          _navOptions = AMapNavOptions(
+            startLocation: start,
+            endLocation: preciseEnd,
+            bottomContentH: _bottomCardHeight,
+            useEmulatorNavi: true,
+          );
+          final NaviMapController? controller = _naviController;
+          if (_naviReady && controller != null) {
+            unawaited(controller.changeMapRouteNaviWithInfo(_navOptions!));
+          }
+        }),
+      );
+
+      unawaited(
+        _planDriveRoute(
+          from: start,
+          to: end,
+          updateStatus: false,
+        ),
+      );
+    } catch (e) {
+      _setStatus('启动嵌入式导航失败: $e');
+      await _stopContinuousLocation();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isStartingNavi = false;
+        });
+      }
+    }
   }
 
   Future<void> _onLocateButtonTap() async {
     final AMapController? controller = _mapController;
-    if (controller == null || !_mapReady) {
+    if (controller == null || !_mapReady || _showEmbeddedNavi) {
       return;
     }
 
-    _setStatus('正在定位...');
+    _setStatus('正在单点定位...');
     try {
       final bool granted = await Permissions().requestPermission();
       if (!granted) {
@@ -328,40 +564,22 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
           showsHeadingIndicator: false,
         ),
       );
-      _setStatus('正在获取当前位置...');
 
-      final location = await _location.getLocation(
-        LocationClientOptions(
-          isOnceLocation: true,
-          isNeedAddress: false,
-          locationMode: LocationMode.Hight_Accuracy,
-          locationPurpose: AMapLocationPurpose.Transport,
-          locationTimeout: 10000,
-          reGeocodeTimeout: 5000,
-        ),
-      );
-
-      final num? latitude = location.latitude;
-      final num? longitude = location.longitude;
-      if (latitude == null || longitude == null) {
+      final LatLng? locateLatLng = await _performSingleLocation();
+      if (locateLatLng == null) {
         _setStatus('未获取到有效坐标，请稍后重试');
         return;
       }
 
-      final currentLatLng = LatLng(latitude.toDouble(), longitude.toDouble());
-      _currentLatLng = currentLatLng;
-
       await controller.setPosition(
-        target: currentLatLng,
+        target: locateLatLng,
         zoom: 16,
       );
 
       await _renderBaseMarkers(fitView: false);
-      _setStatus('已定位到当前位置');
+      _setStatus('已单点定位到当前位置');
     } catch (e) {
       _setStatus('定位失败: $e');
-    } finally {
-      unawaited(_location.stopLocate());
     }
   }
 
@@ -406,20 +624,21 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
       return;
     }
 
-    final LatLng routeStart = _currentLatLng ?? _start;
+    final LatLng routeStart = _mapLocateLatLng ?? _defaultMapCenter;
+    final LatLng routeEnd = _destinationLatLng ?? _destinationFallback;
     final List<MarkerOptions> markers = <MarkerOptions>[
-      if (_currentLatLng == null)
+      if (_mapLocateLatLng == null)
         MarkerOptions(
           position: routeStart,
           icon: 'images/amap_start.png',
           title: '起点',
-          snippet: '天安门附近',
+          snippet: '当前位置',
         ),
       MarkerOptions(
-        position: _end,
+        position: routeEnd,
         icon: 'images/amap_end.png',
         title: '终点',
-        snippet: '望京附近',
+        snippet: _destinationName,
       ),
     ];
 
@@ -431,7 +650,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
 
     if (fitView) {
       await controller.zoomToSpan(
-        [routeStart, _end],
+        [routeStart, routeEnd],
         paddingT: 120,
         paddingL: 80,
         paddingB: 320,
@@ -440,22 +659,41 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     }
   }
 
-  Future<void> _planDriveRoute() async {
-    setState(() {
-      _isPlanning = true;
-    });
-    _setStatus('正在规划驾车路线...');
+  Future<void> _planDriveRoute({
+    LatLng? from,
+    LatLng? to,
+    bool updateStatus = true,
+  }) async {
+    if (updateStatus) {
+      setState(() {
+        _isPlanning = true;
+      });
+      _setStatus('正在规划驾车路线...');
+    }
 
     try {
-      final result = await _search.calculateDriveRoute(
-        RoutePlanParam(from: _currentLatLng ?? _start, to: _end),
-      );
+      final LatLng routeFrom = from ?? _mapLocateLatLng ?? _defaultMapCenter;
+      final LatLng routeTo = to ?? await _resolveDestinationLatLng();
+      final result = await _search
+          .calculateDriveRoute(
+            RoutePlanParam(from: routeFrom, to: routeTo),
+          )
+          .timeout(
+            const Duration(seconds: 15),
+            onTimeout: () => throw TimeoutException('路线规划超时'),
+          );
 
       _driveRouteResult = result;
-      await _drawRouteOnMap();
-      _setStatus('路线规划完成');
+      if (!_showEmbeddedNavi && _mapReady) {
+        await _drawRouteOnMap();
+      }
+      if (updateStatus) {
+        _setStatus('路线规划完成');
+      }
     } catch (e) {
-      _setStatus('路线规划失败: $e');
+      if (updateStatus) {
+        _setStatus('路线规划失败: $e');
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -505,14 +743,6 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     );
   }
 
-  void _showNaviView() {
-    setState(() {
-      _showEmbeddedNavi = true;
-      _naviReady = false;
-    });
-    _setStatus('准备打开嵌入式导航');
-  }
-
   Future<void> _refreshEmbeddedNavi() async {
     final NaviMapController? controller = _naviController;
     if (controller == null || !_naviReady) {
@@ -520,29 +750,60 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
       return;
     }
 
-    await controller.changeMapRouteNaviWithInfo(
-      const AMapNavOptions(
-        startLocation: _start,
-        endLocation: _end,
+    try {
+      final LatLng? start = _naviLocateLatLng ??
+          await _startNaviContinuousLocationAndWaitFirstFix();
+      if (start == null) {
+        _setStatus('连续定位失败，无法刷新导航');
+        return;
+      }
+
+      final LatLng end = await _resolveDestinationLatLng();
+      final AMapNavOptions navOptions = AMapNavOptions(
+        startLocation: start,
+        endLocation: end,
         bottomContentH: _bottomCardHeight,
-      ),
-    );
-    _setStatus('已刷新嵌入式导航');
+        useEmulatorNavi: true,
+      );
+      _navOptions = navOptions;
+      await controller.changeMapRouteNaviWithInfo(navOptions);
+      await _planDriveRoute(
+        from: navOptions.startLocation,
+        to: navOptions.endLocation,
+        updateStatus: false,
+      );
+      _setStatus('已刷新连续定位导航至$_destinationName');
+    } catch (e) {
+      _setStatus('刷新导航失败: $e');
+    }
   }
 
-  void _startExternalNavi() {
-    AMapNavi().startNavi(
-      lat: _end.latitude,
-      lon: _end.longitude,
-      naviType: AMapNavi.drive,
-    );
-    _setStatus('已请求调起原生导航');
+  Future<void> _startExternalNavi() async {
+    try {
+      final bool granted = await Permissions().requestPermission();
+      if (!granted) {
+        _setStatus('需要定位权限才能导航');
+        return;
+      }
+
+      final LatLng destination = await _resolveDestinationLatLng();
+      AMapNavi().startNavi(
+        lat: destination.latitude,
+        lon: destination.longitude,
+        naviType: AMapNavi.drive,
+      );
+      _setStatus('已请求调起原生导航至$_destinationName');
+    } catch (e) {
+      _setStatus('调起原生导航失败: $e');
+    }
   }
 
   Future<void> _resetToMap() async {
     if (_showEmbeddedNavi && _naviController != null) {
       await _naviController!.stopCustomeNavi();
     }
+
+    await _stopContinuousLocation();
 
     if (!mounted) {
       return;
@@ -553,10 +814,20 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     });
 
     if (_mapReady) {
+      if (_mapController != null) {
+        await _mapController!.setMyLocationStyle(
+          MyLocationStyle(
+            myLocationType: LOCATION_TYPE_LOCATE,
+            showMyLocation: true,
+            showsAccuracyRing: true,
+            showsHeadingIndicator: false,
+          ),
+        );
+      }
       if (_driveRouteResult != null) {
         await _drawRouteOnMap();
       } else {
-        await _renderBaseMarkers(fitView: _currentLatLng == null);
+        await _renderBaseMarkers(fitView: _mapLocateLatLng == null);
       }
     }
 

@@ -8,11 +8,12 @@ public class AMapNavOptions {
     public static final int NAVI_TYPE_WALK = 1;
     public static final int NAVI_TYPE_RIDE = 2;
 
-    public AMapNavOptions(int navType, LatLng startLocation, LatLng endLocation, double bottomContentH) {
+    public AMapNavOptions(int navType, LatLng startLocation, LatLng endLocation, double bottomContentH, boolean useEmulatorNavi) {
         this.navType = navType;
         this.startLocation = startLocation;
         this.endLocation = endLocation;
         this.bottomContentH = bottomContentH;
+        this.useEmulatorNavi = useEmulatorNavi;
     }
 
     /// 导航模式
@@ -26,6 +27,9 @@ public class AMapNavOptions {
 
     ///底部地图内容绘制区域向上偏移的高度
     double bottomContentH;
+
+    /// 是否使用虚拟导航（模拟导航）
+    boolean useEmulatorNavi;
 
     public int getNavType() {
         return navType;
@@ -41,5 +45,9 @@ public class AMapNavOptions {
 
     public double getBottomContentH() {
         return bottomContentH;
+    }
+
+    public boolean isUseEmulatorNavi() {
+        return useEmulatorNavi;
     }
 }

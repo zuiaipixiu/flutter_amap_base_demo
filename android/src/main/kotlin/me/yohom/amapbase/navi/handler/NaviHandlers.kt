@@ -92,7 +92,9 @@ object ChangeMapRouteNaviWithInfo : NaviMethodHandler {
         val endLocation = LatLng(endJson.optDouble("latitude"), endJson.optDouble("longitude"))
         val navType = call.argument<Int>("navType") ?: AmapNaviType.DRIVER //default as
         val bottomContentH = call.argument<Double>("bottomContentH ") ?: 100.0
+        val useEmulatorNavi = call.argument<Boolean>("useEmulatorNavi") ?: false
 
+        NaviView.activeUseEmulatorNavi = useEmulatorNavi
 
         val mapNav = AMapNavi.getInstance(registrar.context())
         mapNav.stopNavi()

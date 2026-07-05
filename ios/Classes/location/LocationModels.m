@@ -86,7 +86,7 @@
     }
     locationManager.locationTimeout = _locationTimeout;
     locationManager.reGeocodeTimeout = _reGeocodeTimeout;
-    locationManager.locatingWithReGeocode = _locatingWithReGeocode;
+    locationManager.locatingWithReGeocode = _isNeedAddress || _locatingWithReGeocode;
     if ([locationManager respondsToSelector:@selector(setReGeocodeLanguage:)]) {
         [locationManager setReGeocodeLanguage:_geoLanguage];
     }

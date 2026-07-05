@@ -81,6 +81,9 @@
 ///指定单次定位逆地理超时时间,默认为5s。最小值是2s。注意单次定位请求前设置。
 @property(nonatomic, assign) NSInteger reGeocodeTimeout;
 
+/// 是否需要地址信息 [Android, iOS]
+@property(nonatomic, assign) BOOL isNeedAddress;
+
 ///连续定位是否返回逆地理信息，默认NO。
 @property(nonatomic, assign) BOOL locatingWithReGeocode;
 

@@ -78,7 +78,8 @@ void RegisterLocationEventChannel(NSObject<FlutterPluginRegistrar> *registrar) {
     [options applyTo:locationManager];
 
     if (options.isOnceLocation) {
-        [locationManager requestLocationWithReGeocode:YES
+        BOOL needReGeocode = options.isNeedAddress || options.locatingWithReGeocode;
+        [locationManager requestLocationWithReGeocode:needReGeocode
                                       completionBlock:^(CLLocation *location, AMapLocationReGeocode *regeocode, NSError *error) {
             NSString *json = [[[UnifiedAMapLocation alloc] initWithLocation:location
                                                              withRegoecode:regeocode
@@ -86,12 +87,18 @@ void RegisterLocationEventChannel(NSObject<FlutterPluginRegistrar> *registrar) {
             if (_locationEventSink) {
                 _locationEventSink(json);
             }
+            if (location != nil) {
+                result(json);
+                return;
+            }
             if (error) {
                 result([FlutterError errorWithCode:[NSString stringWithFormat:@"%ld", (long)error.code]
                                            message:error.localizedDescription
                                            details:error.localizedDescription]);
             } else {
-                result(json);
+                result([FlutterError errorWithCode:@"-1"
+                                           message:@"未获取到定位结果"
+                                           details:nil]);
             }
         }];
     } else {

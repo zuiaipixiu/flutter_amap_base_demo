@@ -74,16 +74,18 @@ class UnifiedAMapNavOptions(
         /// 导航终点
         val endLocation: LatLng,
         ///底部地图内容绘制区域向上偏移的高度
-        val bottomContentH: Double = 100.0
+        val bottomContentH: Double = 100.0,
+        /// 是否使用虚拟导航（模拟导航）
+        val useEmulatorNavi: Boolean = false
 ) {
     fun toAMapNavOption(): AMapNavOptions {
         return AMapNavOptions(
-                navType, startLocation, endLocation, bottomContentH
+                navType, startLocation, endLocation, bottomContentH, useEmulatorNavi
         )
     }
 
     override fun toString(): String {
-        return "navType:"+ navType + " startLocation:"+ startLocation.toString() + " endLocation:"+ endLocation.toString() + " bottomH:"+ bottomContentH
+        return "navType:"+ navType + " startLocation:"+ startLocation.toString() + " endLocation:"+ endLocation.toString() + " bottomH:"+ bottomContentH + " useEmulatorNavi:"+ useEmulatorNavi
     }
 }
 
