@@ -42,6 +42,7 @@ import io.flutter.plugin.platform.PlatformViewFactory
 import me.yohom.amapbase.*
 import me.yohom.amapbase.AMapBasePlugin.Companion.registrar
 import me.yohom.amapbase.common.parseFieldJson
+import me.yohom.amapbase.map.success
 import me.yohom.amapbase.map.UnifiedAMapNavOptions
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -51,6 +52,11 @@ import kotlin.concurrent.schedule
 
 const val navChannelName = "me.yohom/map_nav"
 const val navInfoChannelName = "me.yohom/navi_info"
+
+const val CREATED = 1
+const val RESUMED = 3
+const val STOPPED = 5
+const val DESTROYED = 6
 
 class NaviViewFactory(private val activityState: AtomicInteger)
     : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
@@ -240,7 +246,7 @@ class NaviView(context: Context,
         routeOverlayOptions.veryJamTraffic = getDefaultBitmapDescriptor("images/veryjam.png").getBitmap() //严重拥堵路况下
         routeOverlayOptions.passRoute = getDefaultBitmapDescriptor("images/pass.png").getBitmap()
         routeOverlayOptions.unknownTraffic = getDefaultBitmapDescriptor("images/unknow.png").bitmap
-        routeOverlayOptions.lineWidth = 100.0f
+        routeOverlayOptions.lineWidth = 22.0f
         options.isCompassEnabled =false //指南针是否显示
         options.carBitmap =  getDefaultBitmapDescriptor("images/icon_daohang.png").bitmap
         options.isTrafficBarEnabled=false;
@@ -376,7 +382,7 @@ class NaviView(context: Context,
                 mapNav.startNavi(naviType)
                 mapNav.startSpeak()
 
-                Log.e("onCalculateRouteSuccess", "开始导航(${naviType.name})======》")
+                Log.e("onCalculateRouteSuccess", "开始导航($naviType)======》")
 
             }
 
@@ -574,4 +580,3 @@ class NaviView(context: Context,
     }
 
 }
-

@@ -3,6 +3,7 @@ package me.yohom.amapbase.navi;
 import android.util.Log;
 
 import com.amap.api.navi.AMapNaviViewListener;
+import com.amap.api.navi.AmapPageType;
 
 public abstract class MapNaviViewListener implements AMapNaviViewListener {
     String TAG = "dsm_navi_view";
@@ -62,6 +63,61 @@ public abstract class MapNaviViewListener implements AMapNaviViewListener {
     public void onMapTypeChanged(int i) {
         Log.d(TAG, "onMapTypeChanged: ");
 
+    }
+
+    @Override
+    public void onStopSpeaking() {
+        Log.d(TAG, "onStopSpeaking: ");
+    }
+
+    @Override
+    public void onViewTypeChanged(AmapPageType amapPageType) {
+        Log.d(TAG, "onViewTypeChanged: ");
+    }
+
+    @Override
+    public void onAMapNaviViewExit() {
+        Log.d(TAG, "onAMapNaviViewExit: ");
+    }
+
+    @Override
+    public void onStrategyChanged(int i) {
+        Log.d(TAG, "onStrategyChanged: ");
+    }
+
+    @Override
+    public void onBroadcastModeChanged(int i) {
+        Log.d(TAG, "onBroadcastModeChanged: ");
+    }
+
+    @Override
+    public void onDayAndNightModeChanged(int i) {
+        Log.d(TAG, "onDayAndNightModeChanged: ");
+    }
+
+    @Override
+    public void onScaleAutoChanged(boolean b) {
+        Log.d(TAG, "onScaleAutoChanged: ");
+    }
+
+    @Override
+    public void onListenToVoiceDuringCallChanged(boolean b) {
+        Log.d(TAG, "onListenToVoiceDuringCallChanged: ");
+    }
+
+    @Override
+    public void onControlMusicVolumeModeChanged(int i) {
+        Log.d(TAG, "onControlMusicVolumeModeChanged: ");
+    }
+
+    @Override
+    public void onEagleChanged(boolean b) {
+        Log.d(TAG, "onEagleChanged: ");
+    }
+
+    @Override
+    public void onNaviRouteHighlightChange(long l, int i) {
+        Log.d(TAG, "onNaviRouteHighlightChange: ");
     }
 
 //    @Override
