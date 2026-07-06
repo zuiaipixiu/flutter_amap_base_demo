@@ -23,10 +23,10 @@ class SuggestionCity {
   });
 
   SuggestionCity.fromJson(Map<String, dynamic> json) {
-    cityName = json['cityName'] ;
-    cityCode = json['cityCode'] ;
-    adCode = json['adCode'] ;
-    suggestionNum = json['suggestionNum'] ;
+    cityName = json['cityName'] as String?;
+    cityCode = json['cityCode'] as String?;
+    adCode = json['adCode'] as String?;
+    suggestionNum = json['suggestionNum'] as int?;
     districts = json['districts'];
   }
 

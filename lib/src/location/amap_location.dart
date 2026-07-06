@@ -39,7 +39,7 @@ class AMapLocation {
   }
 
   Location _parseLocationResult(dynamic result) {
-    return Location.fromJson(jsonDecode(result as String));
+    return Location.fromJson(jsonDecode(result as String) as Map<String, dynamic>);
   }
 
   int _locationTimeoutMs(LocationClientOptions options) {

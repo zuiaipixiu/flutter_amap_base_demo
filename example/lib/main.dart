@@ -39,7 +39,7 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
   static const String _destinationName = '张贵庄地铁站';
   static const String _destinationCity = '天津';
   static const String _destinationPinIcon = 'images/destination_pin.png';
-  static const String _iosAmapKey = 'a6ea7fe36f8f7e55d5331d68d84f6351';
+  static const String _iosAmapKey = '';
 
   static const double _bottomCardHeight = 220;
   static const double _routeSelectorHeight = 76;
@@ -60,6 +60,16 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     Color(0xFF10B981),
     Color(0xFFF59E0B),
   ];
+  static const Color _routeSelectedBorderColor = Color(0xFF0F7A47);
+  static const Color _routeSelectedFillColor = Color(0xFF00C061);
+  static const Color _routeUnselectedBorderColor = Color(0xFF3FAE7A);
+  static const Color _routeUnselectedFillColor = Color(0xFF9AE8C0);
+  static const double _routeSelectedBorderWidth = 24;
+  static const double _routeSelectedFillWidth = 18;
+  static const double _routeUnselectedBorderWidth = 16;
+  static const double _routeUnselectedFillWidth = 12;
+  static const double _routeSelectedZIndex = 10;
+  static const double _routeUnselectedZIndex = 1;
 
   final AMapSearch _search = AMapSearch();
   final AMapLocation _location = AMapLocation();
@@ -697,6 +707,46 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     return points;
   }
 
+  Future<void> _addAmapStyleRoutePolyline({
+    required AMapController controller,
+    required List<LatLng> points,
+    required bool selected,
+  }) async {
+    final double borderWidth =
+        selected ? _routeSelectedBorderWidth : _routeUnselectedBorderWidth;
+    final double fillWidth =
+        selected ? _routeSelectedFillWidth : _routeUnselectedFillWidth;
+    final Color borderColor =
+        selected ? _routeSelectedBorderColor : _routeUnselectedBorderColor;
+    final Color fillColor =
+        selected ? _routeSelectedFillColor : _routeUnselectedFillColor;
+    final double borderZIndex =
+        selected ? _routeSelectedZIndex - 1 : _routeUnselectedZIndex;
+    final double fillZIndex =
+        selected ? _routeSelectedZIndex : _routeUnselectedZIndex + 1;
+
+    await controller.addPolyline(
+      PolylineOptions(
+        latLngList: points,
+        width: borderWidth,
+        color: borderColor,
+        zIndex: borderZIndex,
+        lineCapType: PolylineOptions.LINE_CAP_TYPE_ROUND,
+        lineJoinType: PolylineOptions.LINE_JOIN_ROUND,
+      ),
+    );
+    await controller.addPolyline(
+      PolylineOptions(
+        latLngList: points,
+        width: fillWidth,
+        color: fillColor,
+        zIndex: fillZIndex,
+        lineCapType: PolylineOptions.LINE_CAP_TYPE_ROUND,
+        lineJoinType: PolylineOptions.LINE_JOIN_ROUND,
+      ),
+    );
+  }
+
   bool _isSameDrivePath(DrivePath a, DrivePath b) {
     final List<LatLng> pointsA = _extractPathPoints(a);
     final List<LatLng> pointsB = _extractPathPoints(b);
@@ -1325,25 +1375,27 @@ class _AMapAllInOneExamplePageState extends State<AMapAllInOneExamplePage> {
     await controller.clearMap();
 
     for (int index = 0; index < _routePathOptions.length; index++) {
+      if (index == _selectedRouteIndex) {
+        continue;
+      }
       final List<LatLng> routePoints =
           _extractPathPoints(_routePathOptions[index]);
       if (routePoints.isEmpty) {
         continue;
       }
 
-      final bool selected = index == _selectedRouteIndex;
-      await controller.addPolyline(
-        PolylineOptions(
-          latLngList: routePoints,
-          width: selected ? 18 : 10,
-          color: selected
-              ? _routePlanColors[index % _routePlanColors.length]
-              : const Color(0xFFB0BEC5),
-          lineCapType: PolylineOptions.LINE_CAP_TYPE_ROUND,
-          lineJoinType: PolylineOptions.LINE_JOIN_ROUND,
-        ),
+      await _addAmapStyleRoutePolyline(
+        controller: controller,
+        points: routePoints,
+        selected: false,
       );
     }
+
+    await _addAmapStyleRoutePolyline(
+      controller: controller,
+      points: points,
+      selected: true,
+    );
 
     await _renderDestinationMarker(clear: false);
 

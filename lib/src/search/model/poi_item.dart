@@ -127,45 +127,45 @@ class PoiItem {
   });
 
   PoiItem.fromJson(Map<String, dynamic> json) {
-    adCode = json['adCode'];
-    adName = json['adName'];
-    businessArea = json['businessArea'];
-    cityCode = json['cityCode'];
-    cityName = json['cityName'];
-    direction = json['direction'];
-    distance = json['distance'];
-    email = json['email'];
-    indoorData = json['indoorData'] != null ? IndoorData.fromJson(json['indoorData']) : null;
-    isIndoorMap = json['isIndoorMap'];
-    latLonPoint = json['latLonPoint'] != null ? LatLng.fromJson(json['latLonPoint']) : null;
-    enter = json['enter'] != null ? LatLng.fromJson(json['enter']) : null;
-    exit = json['exit'] != null ? LatLng.fromJson(json['exit']) : null;
-    parkingType = json['parkingType'];
+    adCode = json['adCode'] as String?;
+    adName = json['adName'] as String?;
+    businessArea = json['businessArea'] as String?;
+    cityCode = json['cityCode'] as String?;
+    cityName = json['cityName'] as String?;
+    direction = json['direction'] as String?;
+    distance = json['distance'] as int?;
+    email = json['email'] as String?;
+    indoorData = json['indoorData'] != null ? IndoorData.fromJson(json['indoorData'] as Map<String, dynamic>) : null;
+    isIndoorMap = json['isIndoorMap'] as bool?;
+    latLonPoint = json['latLonPoint'] != null ? LatLng.fromJson(json['latLonPoint'] as Map<String, dynamic>) : null;
+    enter = json['enter'] != null ? LatLng.fromJson(json['enter'] as Map<String, dynamic>) : null;
+    exit = json['exit'] != null ? LatLng.fromJson(json['exit'] as Map<String, dynamic>) : null;
+    parkingType = json['parkingType'] as String?;
     if (json['photos'] != null) {
       photos = [];
       json['photos'].forEach((v) {
-        photos?.add(Photo.fromJson(v));
+        photos?.add(Photo.fromJson(v as Map<String, dynamic>));
       });
     }
-    poiExtension = json['poiExtension'] != null ? PoiExtension.fromJson(json['poiExtension']) : null;
-    poiId = json['poiId'];
-    postcode = json['postcode'];
-    provinceCode = json['provinceCode'];
-    provinceName = json['provinceName'];
-    shopID = json['shopID'];
-    snippet = json['snippet'];
+    poiExtension = json['poiExtension'] != null ? PoiExtension.fromJson(json['poiExtension'] as Map<String, dynamic>) : null;
+    poiId = json['poiId'] as String?;
+    postcode = json['postcode'] as String?;
+    provinceCode = json['provinceCode'] as String?;
+    provinceName = json['provinceName'] as String?;
+    shopID = json['shopID'] as String?;
+    snippet = json['snippet'] as String?;
     if (json['subPois'] != null) {
       subPois = [];
       json['subPois'].forEach((v) {
-        subPois?.add(SubPoiItem.fromJson(v));
+        subPois?.add(SubPoiItem.fromJson(v as Map<String, dynamic>));
       });
     }
-    tel = json['tel'];
-    title = json['title'];
-    typeCode = json['typeCode'];
-    typeDes = json['typeDes'];
-    website = json['website'];
-    gridCode = json['gridCode'] ?? "";
+    tel = json['tel'] as String?;
+    title = json['title'] as String?;
+    typeCode = json['typeCode'] as String?;
+    typeDes = json['typeDes'] as String?;
+    website = json['website'] as String?;
+    gridCode = json['gridCode'] as String? ?? "";
   }
 
   Map<String, dynamic> toJson() {

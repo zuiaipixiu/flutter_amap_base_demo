@@ -32,27 +32,27 @@ class PoiResult {
   });
 
   PoiResult.fromJson(Map<String, dynamic> json) {
-    pageCount = json['pageCount'];
+    pageCount = json['pageCount'] as int?;
     if (json['bound'] != null) {
-      bound = SearchBound.fromJson(json['bound']);
+      bound = SearchBound.fromJson(json['bound'] as Map<String, dynamic>);
     }
     if (json['pois'] != null) {
       pois = [];
       json['pois'].forEach((v) {
-        pois?.add(PoiItem.fromJson(v));
+        pois?.add(PoiItem.fromJson(v as Map<String, dynamic>));
       });
     }
-    query = json['query'] != null ? Query.fromJson(json['query']) : null;
+    query = json['query'] != null ? Query.fromJson(json['query'] as Map<String, dynamic>) : null;
     if (json['searchSuggestionCitys'] != null) {
       searchSuggestionCitys = [];
       json['searchSuggestionCitys'].forEach((v) {
-        searchSuggestionCitys?.add(SuggestionCity.fromJson(v));
+        searchSuggestionCitys?.add(SuggestionCity.fromJson(v as Map<String, dynamic>));
       });
     }
     if (json['searchSuggestionKeywords'] != null) {
       searchSuggestionKeywords = [];
       json['searchSuggestionKeywords'].forEach((v) {
-        searchSuggestionKeywords?.add(v);
+        searchSuggestionKeywords?.add(v as String);
       });
     }
   }

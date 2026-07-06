@@ -3,99 +3,105 @@
   "packages": [
     {
       "name": "characters",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/characters-1.4.0",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/characters-1.4.0",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
     {
       "name": "collection",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/collection-1.19.1",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/collection-1.19.1",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
     {
       "name": "device_info_plus",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/device_info_plus-9.1.2",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/device_info_plus-12.4.0",
       "packageUri": "lib/",
-      "languageVersion": "2.18"
+      "languageVersion": "3.7"
     },
     {
       "name": "device_info_plus_platform_interface",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/device_info_plus_platform_interface-7.0.3",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/device_info_plus_platform_interface-7.0.3",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
     {
       "name": "ffi",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/ffi-2.2.0",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/ffi-2.2.0",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
     {
       "name": "file",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/file-7.0.1",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/file-7.0.1",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
     {
       "name": "flutter",
-      "rootUri": "file:///Users/ludongfang/fvm/versions/3.38.7/packages/flutter",
+      "rootUri": "file:///Users/lecz/fvm/versions/3.38.7/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
     {
       "name": "flutter_web_plugins",
-      "rootUri": "file:///Users/ludongfang/fvm/versions/3.38.7/packages/flutter_web_plugins",
+      "rootUri": "file:///Users/lecz/fvm/versions/3.38.7/packages/flutter_web_plugins",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
     {
       "name": "material_color_utilities",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/material_color_utilities-0.11.1",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/material_color_utilities-0.11.1",
       "packageUri": "lib/",
       "languageVersion": "2.17"
     },
     {
       "name": "meta",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/meta-1.17.0",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/meta-1.17.0",
       "packageUri": "lib/",
       "languageVersion": "3.5"
     },
     {
       "name": "path",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/path-1.9.1",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/path-1.9.1",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
     {
       "name": "plugin_platform_interface",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/plugin_platform_interface-2.1.8",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/plugin_platform_interface-2.1.8",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
     {
       "name": "sky_engine",
-      "rootUri": "file:///Users/ludongfang/fvm/versions/3.38.7/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///Users/lecz/fvm/versions/3.38.7/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
     {
       "name": "vector_math",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/vector_math-2.2.0",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/vector_math-2.2.0",
       "packageUri": "lib/",
       "languageVersion": "3.1"
     },
     {
+      "name": "web",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/web-1.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
       "name": "win32",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/win32-5.15.0",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/win32-5.15.0",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
     {
       "name": "win32_registry",
-      "rootUri": "file:///Users/ludongfang/.pub-cache/hosted/pub.flutter-io.cn/win32_registry-1.1.5",
+      "rootUri": "file:///Users/lecz/.pub-cache/hosted/pub.flutter-io.cn/win32_registry-2.1.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.7"
     },
     {
       "name": "flutter_amap_base",
@@ -106,7 +112,7 @@
   ],
   "generator": "pub",
   "generatorVersion": "3.10.7",
-  "flutterRoot": "file:///Users/ludongfang/fvm/versions/3.38.7",
+  "flutterRoot": "file:///Users/lecz/fvm/versions/3.38.7",
   "flutterVersion": "3.38.7",
-  "pubCache": "file:///Users/ludongfang/.pub-cache"
+  "pubCache": "file:///Users/lecz/.pub-cache"
 }

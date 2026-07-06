@@ -50,7 +50,7 @@ SPEC CHECKSUMS:
   AMapLocation: 51549dc73f5bfa8806c33857ad2079fa6215bb49
   AMapNavi: 3c55c45e1653af0dbfd2a0c760bf39741e860cb1
   AMapSearch: ec339fc3cf772d5ff657f02397888391b4b1bde8
-  device_info_plus: 335f3ce08d2e174b9fdc3db3db0f4e3b1f66bd89
+  device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_amap_base: 564d73ac8288f700966cf8bf1024881e58d317bf
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201

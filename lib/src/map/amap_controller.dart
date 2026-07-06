@@ -274,14 +274,14 @@ class AMapController {
 
   /// 获取中心点
   Future<LatLng> getCenterLatlng() async {
-    String result = await _mapChannel.invokeMethod("map#getCenterPoint");
-    return LatLng.fromJson(json.decode(result));
+    final String result = await _mapChannel.invokeMethod("map#getCenterPoint") as String;
+    return LatLng.fromJson(json.decode(result) as Map<String, dynamic>);
   }
 
   /// 获取地图蓝点（用户位置），需先开启 showMyLocation
   Future<LatLng> getUserLatLng() async {
-    final String result = await _mapChannel.invokeMethod('map#getUserLocation');
-    return LatLng.fromJson(json.decode(result));
+    final String result = await _mapChannel.invokeMethod('map#getUserLocation') as String;
+    return LatLng.fromJson(json.decode(result) as Map<String, dynamic>);
   }
 
   /// 截图
@@ -338,10 +338,10 @@ class AMapController {
   //endregion
 
   /// marker点击事件流
-  Stream<MarkerOptions> get markerClickedEvent => _markerClickedEventChannel.receiveBroadcastStream().map((data) => MarkerOptions.fromJson(jsonDecode(data)));
+  Stream<MarkerOptions> get markerClickedEvent => _markerClickedEventChannel.receiveBroadcastStream().map((data) => MarkerOptions.fromJson(jsonDecode(data as String) as Map<String, dynamic>));
 
   /// map移动事件流
-  Stream<String> get mapMovedEvent => _mapMovedEventChannel.receiveBroadcastStream().map((result) => result);
+  Stream<String> get mapMovedEvent => _mapMovedEventChannel.receiveBroadcastStream().map((result) => result as String);
 }
 
 //_locationEventChannel

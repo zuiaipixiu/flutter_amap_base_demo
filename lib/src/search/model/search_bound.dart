@@ -33,16 +33,16 @@ class SearchBound {
   });
 
   SearchBound.fromJson(Map<String, dynamic> json)
-      : lowerLeft = json['lowerLeft'] != null ? LatLng.fromJson(json['lowerLeft']) : null,
-        upperRight = json['upperRight'] != null ? LatLng.fromJson(json['upperRight']) : null,
-        center = json['center'] != null ? LatLng.fromJson(json['center']) : null,
-        range = json['range'],
-        shape = json['shape'],
-        isDistanceSort = json['isDistanceSort'] {
+      : lowerLeft = json['lowerLeft'] != null ? LatLng.fromJson(json['lowerLeft'] as Map<String, dynamic>) : null,
+        upperRight = json['upperRight'] != null ? LatLng.fromJson(json['upperRight'] as Map<String, dynamic>) : null,
+        center = json['center'] != null ? LatLng.fromJson(json['center'] as Map<String, dynamic>) : null,
+        range = json['range'] as int?,
+        shape = json['shape'] as String?,
+        isDistanceSort = json['isDistanceSort'] as bool? {
     if (json['polyGonList'] != null) {
       polyGonList = [];
       json['polyGonList'].forEach((v) {
-        polyGonList?.add(LatLng.fromJson(v));
+        polyGonList?.add(LatLng.fromJson(v as Map<String, dynamic>));
       });
     }
   }

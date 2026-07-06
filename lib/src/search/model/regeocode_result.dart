@@ -13,8 +13,8 @@ class ReGeocodeResult {
   });
 
   ReGeocodeResult.fromJson(Map<String, dynamic> json) {
-    regeocodeAddress = json['regeocodeAddress'] != null ? RegeocodeAddress.fromJson(json['regeocodeAddress']) : null;
-    regeocodeQuery = json['regeocodeQuery'] != null ? RegeocodeQuery.fromJson(json['regeocodeQuery']) : null;
+    regeocodeAddress = json['regeocodeAddress'] != null ? RegeocodeAddress.fromJson(json['regeocodeAddress'] as Map<String, dynamic>) : null;
+    regeocodeQuery = json['regeocodeQuery'] != null ? RegeocodeQuery.fromJson(json['regeocodeQuery'] as Map<String, dynamic>) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -90,48 +90,48 @@ class RegeocodeAddress {
   });
 
   RegeocodeAddress.fromJson(Map<String, dynamic> json) {
-    adCode = json['adCode'];
+    adCode = json['adCode'] as String?;
     if (json['aois'] != null) {
       aois = [];
       json['aois'].forEach((v) {
-        aois?.add(Aoi.fromJson(v));
+        aois?.add(Aoi.fromJson(v as Map<String, dynamic>));
       });
     }
-    building = json['building'];
+    building = json['building'] as String?;
     if (json['businessAreas'] != null) {
       businessAreas = [];
       json['businessAreas'].forEach((v) {
-        businessAreas?.add(BusinessAreas.fromJson(v));
+        businessAreas?.add(BusinessAreas.fromJson(v as Map<String, dynamic>));
       });
     }
-    city = json['city'];
-    cityCode = json['cityCode'];
-    country = json['country'];
+    city = json['city'] as String?;
+    cityCode = json['cityCode'] as String?;
+    country = json['country'] as String?;
     if (json['crossroads'] != null) {
       crossroads = [];
       json['crossroads'].forEach((v) {
-        crossroads?.add(Crossroad.fromJson(v));
+        crossroads?.add(Crossroad.fromJson(v as Map<String, dynamic>));
       });
     }
-    district = json['district'];
-    formatAddress = json['formatAddress'];
-    neighborhood = json['neighborhood'];
+    district = json['district'] as String?;
+    formatAddress = json['formatAddress'] as String?;
+    neighborhood = json['neighborhood'] as String?;
     if (json['pois'] != null) {
       pois = [];
       json['pois'].forEach((v) {
-        pois?.add(PoiItem.fromJson(v));
+        pois?.add(PoiItem.fromJson(v as Map<String, dynamic>));
       });
     }
-    province = json['province'];
+    province = json['province'] as String?;
     if (json['roads'] != null) {
       roads = [];
       json['roads'].forEach((v) {
-        roads?.add(Road.fromJson(v));
+        roads?.add(Road.fromJson(v as Map<String, dynamic>));
       });
     }
-    streetNumber = json['streetNumber'] != null ? StreetNumber.fromJson(json['streetNumber']) : null;
-    towncode = json['towncode'];
-    township = json['township'];
+    streetNumber = json['streetNumber'] != null ? StreetNumber.fromJson(json['streetNumber'] as Map<String, dynamic>) : null;
+    towncode = json['towncode'] as String?;
+    township = json['township'] as String?;
   }
 
   Map<String, dynamic> toJson() {
@@ -236,11 +236,11 @@ class Aoi {
   });
 
   Aoi.fromJson(Map<String, dynamic> json) {
-    adCode = json['adCode'];
-    aoiArea = json['aoiArea'];
-    aoiCenterPoint = json['aoiCenterPoint'] != null ? LatLng.fromJson(json['aoiCenterPoint']) : null;
-    aoiId = json['aoiId'];
-    aoiName = json['aoiName'];
+    adCode = json['adCode'] as String?;
+    aoiArea = json['aoiArea'] as num?;
+    aoiCenterPoint = json['aoiCenterPoint'] != null ? LatLng.fromJson(json['aoiCenterPoint'] as Map<String, dynamic>) : null;
+    aoiId = json['aoiId'] as String?;
+    aoiName = json['aoiName'] as String?;
   }
 
   Map<String, dynamic> toJson() {
@@ -293,8 +293,8 @@ class BusinessAreas {
   });
 
   BusinessAreas.fromJson(Map<String, dynamic> json) {
-    centerPoint = json['centerPoint'] != null ? LatLng.fromJson(json['centerPoint']) : null;
-    name = json['name'];
+    centerPoint = json['centerPoint'] != null ? LatLng.fromJson(json['centerPoint'] as Map<String, dynamic>) : null;
+    name = json['name'] as String?;
   }
 
   Map<String, dynamic> toJson() {
@@ -352,15 +352,15 @@ class Crossroad {
   });
 
   Crossroad.fromJson(Map<String, dynamic> json) {
-    centerPoint = json['centerPoint'] != null ? LatLng.fromJson(json['centerPoint']) : null;
-    direction = json['direction'];
-    distance = json['distance'];
-    firstRoadId = json['firstRoadId'];
-    firstRoadName = json['firstRoadName'];
-    id = json['id'];
-    roadWidth = json['roadWidth'];
-    secondRoadId = json['secondRoadId'];
-    secondRoadName = json['secondRoadName'];
+    centerPoint = json['centerPoint'] != null ? LatLng.fromJson(json['centerPoint'] as Map<String, dynamic>) : null;
+    direction = json['direction'] as String?;
+    distance = json['distance'] as num?;
+    firstRoadId = json['firstRoadId'] as String?;
+    firstRoadName = json['firstRoadName'] as String?;
+    id = json['id'] as String?;
+    roadWidth = json['roadWidth'] as num?;
+    secondRoadId = json['secondRoadId'] as String?;
+    secondRoadName = json['secondRoadName'] as String?;
   }
 
   Map<String, dynamic> toJson() {
@@ -431,11 +431,11 @@ class Road {
   });
 
   Road.fromJson(Map<String, dynamic> json) {
-    direction = json['direction'];
-    distance = json['distance'];
-    id = json['id'];
-    latLngPoint = json['latLngPoint'] != null ? LatLng.fromJson(json['latLngPoint']) : null;
-    name = json['name'];
+    direction = json['direction'] as String?;
+    distance = json['distance'] as num?;
+    id = json['id'] as String?;
+    latLngPoint = json['latLngPoint'] != null ? LatLng.fromJson(json['latLngPoint'] as Map<String, dynamic>) : null;
+    name = json['name'] as String?;
   }
 
   Map<String, dynamic> toJson() {
@@ -494,11 +494,11 @@ class StreetNumber {
   });
 
   StreetNumber.fromJson(Map<String, dynamic> json) {
-    direction = json['direction'];
-    distance = json['distance'];
-    latLonPoint = json['latLonPoint'] != null ? LatLng.fromJson(json['latLonPoint']) : null;
-    number = json['number'];
-    street = json['street'];
+    direction = json['direction'] as String?;
+    distance = json['distance'] as num?;
+    latLonPoint = json['latLonPoint'] != null ? LatLng.fromJson(json['latLonPoint'] as Map<String, dynamic>) : null;
+    number = json['number'] as String?;
+    street = json['street'] as String?;
   }
 
   Map<String, dynamic> toJson() {
@@ -555,10 +555,10 @@ class RegeocodeQuery {
   });
 
   RegeocodeQuery.fromJson(Map<String, dynamic> json) {
-    latLonType = json['latLonType'];
-    poiType = json['poiType'];
-    point = json['point'] != null ? LatLng.fromJson(json['point']) : null;
-    radius = json['radius'];
+    latLonType = json['latLonType'] as String?;
+    poiType = json['poiType'] as String?;
+    point = json['point'] != null ? LatLng.fromJson(json['point'] as Map<String, dynamic>) : null;
+    radius = json['radius'] as num?;
   }
 
   Map<String, dynamic> toJson() {

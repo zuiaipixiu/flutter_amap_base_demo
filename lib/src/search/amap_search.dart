@@ -27,42 +27,42 @@ class AMapSearch {
   Future<PoiResult> searchPoi(PoiSearchQuery query) {
     L.p('方法searchPoi dart端参数: query.toJsonString() -> ${query.toJsonString()}');
 
-    return _searchChannel.invokeMethod('search#searchPoi', {'query': query.toJsonString()}).then((result) => result).then((jsonString) => PoiResult.fromJson(jsonDecode(jsonString)));
+    return _searchChannel.invokeMethod('search#searchPoi', {'query': query.toJsonString()}).then((result) => result).then((jsonString) => PoiResult.fromJson(jsonDecode(jsonString as String) as Map<String, dynamic>));
   }
 
   /// 搜索poi 周边搜索
   Future<PoiResult> searchPoiBound(PoiSearchQuery query) {
     L.p('searchPoiBound dart端参数: query.toJsonString() -> ${query.toJsonString()}');
 
-    return _searchChannel.invokeMethod('search#searchPoiBound', {'query': query.toJsonString()}).then((result) => result).then((jsonString) => PoiResult.fromJson(jsonDecode(jsonString)));
+    return _searchChannel.invokeMethod('search#searchPoiBound', {'query': query.toJsonString()}).then((result) => result).then((jsonString) => PoiResult.fromJson(jsonDecode(jsonString as String) as Map<String, dynamic>));
   }
 
   /// 搜索poi 多边形搜索
   Future<PoiResult> searchPoiPolygon(PoiSearchQuery query) {
     L.p('searchPoiPolygon dart端参数: query.toJsonString() -> ${query.toJsonString()}');
 
-    return _searchChannel.invokeMethod('search#searchPoiPolygon', {'query': query.toJsonString()}).then((result) => result).then((jsonString) => PoiResult.fromJson(jsonDecode(jsonString)));
+    return _searchChannel.invokeMethod('search#searchPoiPolygon', {'query': query.toJsonString()}).then((result) => result).then((jsonString) => PoiResult.fromJson(jsonDecode(jsonString as String) as Map<String, dynamic>));
   }
 
   /// 按id搜索poi
   Future<PoiItem> searchPoiId(String id) {
     L.p('searchPoiId dart端参数: id -> $id');
 
-    return _searchChannel.invokeMethod('search#searchPoiId', {'id': id}).then((result) => result).then((jsonString) => PoiItem.fromJson(jsonDecode(jsonString)));
+    return _searchChannel.invokeMethod('search#searchPoiId', {'id': id}).then((result) => result).then((jsonString) => PoiItem.fromJson(jsonDecode(jsonString as String) as Map<String, dynamic>));
   }
 
   /// 道路沿途直线检索POI
   Future<RoutePoiResult> searchRoutePoiLine(RoutePoiSearchQuery query) {
     L.p('searchRoutePoiLine dart端参数: query.toJsonString() -> ${query.toJsonString()}');
 
-    return _searchChannel.invokeMethod('search#searchRoutePoiLine', {'query': query.toJsonString()}).then((result) => result).then((jsonString) => RoutePoiResult.fromJson(jsonDecode(jsonString)));
+    return _searchChannel.invokeMethod('search#searchRoutePoiLine', {'query': query.toJsonString()}).then((result) => result).then((jsonString) => RoutePoiResult.fromJson(jsonDecode(jsonString as String) as Map<String, dynamic>));
   }
 
   /// 道路沿途多边形检索POI
   Future<RoutePoiResult> searchRoutePoiPolygon(RoutePoiSearchQuery query) {
     L.p('searchRoutePoiPolygon dart端参数: query.toJsonString() -> ${query.toJsonString()}');
 
-    return _searchChannel.invokeMethod('search#searchRoutePoiPolygon', {'query': query.toJsonString()}).then((result) => result).then((jsonString) => RoutePoiResult.fromJson(jsonDecode(jsonString)));
+    return _searchChannel.invokeMethod('search#searchRoutePoiPolygon', {'query': query.toJsonString()}).then((result) => result).then((jsonString) => RoutePoiResult.fromJson(jsonDecode(jsonString as String) as Map<String, dynamic>));
   }
 
   /// 计算驾驶路线
@@ -75,7 +75,7 @@ class AMapSearch {
           {'routePlanParam': _routePlanParam},
         )
         .then((result) => result)
-        .then((jsonResult) => DriveRouteResult.fromJson(jsonDecode(jsonResult)));
+        .then((jsonResult) => DriveRouteResult.fromJson(jsonDecode(jsonResult as String) as Map<String, dynamic>));
   }
 
   /// 计算骑行路线
@@ -88,7 +88,7 @@ class AMapSearch {
           {'routePlanParam': _routePlanParam},
         )
         .then((result) => result)
-        .then((jsonResult) => DriveRouteResult.fromJson(jsonDecode(jsonResult)));
+        .then((jsonResult) => DriveRouteResult.fromJson(jsonDecode(jsonResult as String) as Map<String, dynamic>));
   }
 
   /// 地址转坐标 [name]表示地址，第二个参数表示查询城市，中文或者中文全拼，citycode、adcode
@@ -101,7 +101,7 @@ class AMapSearch {
           {'name': name, 'city': city},
         )
         .then((result) => result)
-        .then((jsonResult) => GeocodeResult.fromJson(jsonDecode(jsonResult)));
+        .then((jsonResult) => GeocodeResult.fromJson(jsonDecode(jsonResult as String) as Map<String, dynamic>));
   }
 
   /// 逆地理编码（坐标转地址）
@@ -122,7 +122,7 @@ class AMapSearch {
           },
         )
         .then((result) => result)
-        .then((jsonResult) => ReGeocodeResult.fromJson(jsonDecode(jsonResult)));
+        .then((jsonResult) => ReGeocodeResult.fromJson(jsonDecode(jsonResult as String) as Map<String, dynamic>));
   }
 
   /// 距离测量 参考[链接](https://lbs.amap.com/api/android-sdk/guide/computing-equipment/distancesearch)
@@ -141,7 +141,7 @@ class AMapSearch {
       "type": DistanceSearchType.values.indexOf(type),
     };
 
-    List<dynamic> result = await _searchChannel.invokeMethod("tool#distanceSearch", params);
+    final List<dynamic> result = await _searchChannel.invokeMethod("tool#distanceSearch", params) as List<dynamic>;
     return result.map((v) => v as int).toList();
   }
 
@@ -160,9 +160,9 @@ class AMapSearch {
         .then((result) => result)
         .then((json) {
           if (Platform.isIOS) {
-            return BusStationResult.ios(BusStationResult_iOS.fromJson(jsonDecode(json)));
+            return BusStationResult.ios(BusStationResult_iOS.fromJson(jsonDecode(json as String) as Map<String, dynamic>));
           } else if (Platform.isAndroid) {
-            return BusStationResult.fromJson(jsonDecode(json));
+            return BusStationResult.fromJson(jsonDecode(json as String) as Map<String, dynamic>);
           } else {
             return null;
           }

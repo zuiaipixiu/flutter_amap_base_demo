@@ -34,23 +34,23 @@ class District_iOS {
   });
 
   District_iOS.fromJson(Map<String, dynamic> json) {
-    adcode = json['adcode'];
-    citycode = json['citycode'];
-    name = json['name'];
-    level = json['level'];
+    adcode = json['adcode'] as String?;
+    citycode = json['citycode'] as String?;
+    name = json['name'] as String?;
+    level = json['level'] as String?;
     if (json['center'] != null) {
-      center = LatLng.fromJson(json['center']);
+      center = LatLng.fromJson(json['center'] as Map<String, dynamic>);
     }
     if (json['districts'] != null) {
       districts = [];
       json['districts'].forEach((v) {
-        districts?.add(District_iOS.fromJson(v));
+        districts?.add(District_iOS.fromJson(v as Map<String, dynamic>));
       });
     }
     if (json['polylines'] != null) {
       polylines = [];
       json['polylines'].forEach((v) {
-        polylines?.add(v);
+        polylines?.add(v as String);
       });
     }
   }

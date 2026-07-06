@@ -63,21 +63,21 @@ class BusStationResult {
     if (json['busStations'] != null) {
       busStations = [];
       json['busStations'].forEach((v) {
-        busStations?.add(BusStation.fromJson(v));
+        busStations?.add(BusStation.fromJson(v as Map<String, dynamic>));
       });
     }
-    pageCount = json['pageCount'];
-    query = json['query'] != null ? Query.fromJson(json['query']) : null;
+    pageCount = json['pageCount'] as int?;
+    query = json['query'] != null ? Query.fromJson(json['query'] as Map<String, dynamic>) : null;
     if (json['searchSuggestionCities'] != null) {
       searchSuggestionCities = [];
       json['searchSuggestionCities'].forEach((v) {
-        searchSuggestionCities?.add(SuggestionCity.fromJson(v));
+        searchSuggestionCities?.add(SuggestionCity.fromJson(v as Map<String, dynamic>));
       });
     }
     if (json['searchSuggestionKeywords'] != null) {
       searchSuggestionKeywords = [];
       json['searchSuggestionKeywords'].forEach((v) {
-        searchSuggestionKeywords?.add(v);
+        searchSuggestionKeywords?.add(v as String);
       });
     }
   }
@@ -146,17 +146,17 @@ class BusStation {
   });
 
   BusStation.fromJson(Map<String, dynamic> json) {
-    adCode = json['adCode'];
+    adCode = json['adCode'] as String?;
     if (json['busLineItems'] != null) {
       busLineItems = [];
       json['busLineItems'].forEach((v) {
-        busLineItems?.add(BusLineItem.fromJson(v));
+        busLineItems?.add(BusLineItem.fromJson(v as Map<String, dynamic>));
       });
     }
-    busStationId = json['busStationId'];
-    busStationName = json['busStationName'];
-    cityCode = json['cityCode'];
-    latLng = json['latLng'] != null ? LatLng.fromJson(json['latLng']) : null;
+    busStationId = json['busStationId'] as String?;
+    busStationName = json['busStationName'] as String?;
+    cityCode = json['cityCode'] as String?;
+    latLng = json['latLng'] != null ? LatLng.fromJson(json['latLng'] as Map<String, dynamic>) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -232,27 +232,27 @@ class BusLineItem {
   });
 
   BusLineItem.fromJson(Map<String, dynamic> json) {
-    basicPrice = json['basicPrice'];
+    basicPrice = (json['basicPrice'] as num?)?.toDouble();
     if (json['bounds'] != null) {
       bounds = [];
       json['bounds'].forEach((v) {
-        bounds?.add(LatLng.fromJson(v));
+        bounds?.add(LatLng.fromJson(v as Map<String, dynamic>));
       });
     }
-    busLineId = json['busLineId'];
-    busLineName = json['busLineName'];
-    busLineType = json['busLineType'];
+    busLineId = json['busLineId'] as String?;
+    busLineName = json['busLineName'] as String?;
+    busLineType = json['busLineType'] as String?;
     if (json['busStations'] != null) {
       busStations = [];
       json['busStations'].forEach((v) {
-        busStations?.add(BusStation.fromJson(v));
+        busStations?.add(BusStation.fromJson(v as Map<String, dynamic>));
       });
     }
-    cityCode = json['cityCode'];
-    distance = json['distance'];
-    originatingStation = json['originatingStation'];
-    terminalStation = json['terminalStation'];
-    totalPrice = json['totalPrice'];
+    cityCode = json['cityCode'] as String?;
+    distance = (json['distance'] as num?)?.toDouble();
+    originatingStation = json['originatingStation'] as String?;
+    terminalStation = json['terminalStation'] as String?;
+    totalPrice = (json['totalPrice'] as num?)?.toDouble();
   }
 
   Map<String, dynamic> toJson() {
@@ -329,10 +329,10 @@ class Query {
   });
 
   Query.fromJson(Map<String, dynamic> json) {
-    city = json['city'];
-    pageNumber = json['pageNumber'];
-    pageSize = json['pageSize'];
-    queryString = json['queryString'];
+    city = json['city'] as String?;
+    pageNumber = json['pageNumber'] as int?;
+    pageSize = json['pageSize'] as int?;
+    queryString = json['queryString'] as String?;
   }
 
   Map<String, dynamic> toJson() {

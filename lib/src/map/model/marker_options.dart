@@ -142,37 +142,37 @@ class MarkerOptions {
       this.addressLabelContent = '地址信息'});
 
   MarkerOptions.fromJson(Map<String, dynamic> json) {
-    alpha = json['alpha'];
-    anchorU = json['anchorU'];
-    anchorV = json['anchorV'];
-    autoOverturnInfoWindow = json['autoOverturnInfoWindow'];
-    belowMaskLayer = json['belowMaskLayer'];
-    displayLevel = json['displayLevel'];
-    draggable = json['draggable'];
-    icon = json['icon'];
-    icons = json['icons'];
-    infoWindowEnable = json['infoWindowEnable'];
-    infoWindowOffsetX = json['infoWindowOffsetX'];
-    infoWindowOffsetY = json['infoWindowOffsetY'];
-    isFlat = json['isFlat'];
-    isGps = json['isGps'];
-    period = json['period'];
-    position = json['position'] != null ? LatLng.fromJson(json['position']) : null;
-    rotateAngle = json['rotateAngle'];
-    snippet = json['snippet'];
-    title = json['title'];
-    visible = json['visible'];
-    zIndex = json['zIndex'];
-    haveBubble = json['haveBubble'];
-    haveAddressLabel = json['haveAddressLabel'];
-    bubbleContent = json['bubbleContent'];
-    addressLabelContent = json['addressLabelContent'];
+    alpha = json['alpha'] as num?;
+    anchorU = json['anchorU'] as num?;
+    anchorV = json['anchorV'] as num?;
+    autoOverturnInfoWindow = json['autoOverturnInfoWindow'] as bool?;
+    belowMaskLayer = json['belowMaskLayer'] as bool?;
+    displayLevel = json['displayLevel'] as num?;
+    draggable = json['draggable'] as bool?;
+    icon = json['icon'] as String?;
+    icons = json['icons'] as List?;
+    infoWindowEnable = json['infoWindowEnable'] as bool?;
+    infoWindowOffsetX = json['infoWindowOffsetX'] as num?;
+    infoWindowOffsetY = json['infoWindowOffsetY'] as num?;
+    isFlat = json['isFlat'] as bool?;
+    isGps = json['isGps'] as bool?;
+    period = json['period'] as num?;
+    position = json['position'] != null ? LatLng.fromJson(json['position'] as Map<String, dynamic>) : null;
+    rotateAngle = json['rotateAngle'] as num?;
+    snippet = json['snippet'] as String?;
+    title = json['title'] as String?;
+    visible = json['visible'] as bool?;
+    zIndex = json['zIndex'] as num?;
+    haveBubble = json['haveBubble'] as bool?;
+    haveAddressLabel = json['haveAddressLabel'] as bool?;
+    bubbleContent = json['bubbleContent'] as String?;
+    addressLabelContent = json['addressLabelContent'] as String?;
   }
 
   Map<String, dynamic> toJson() {
     return {
       'icon': toResolutionAware(icon!),
-      'icons': icons?.map((it) => toResolutionAware(it)).toList(),
+      'icons': icons?.map((it) => toResolutionAware(it as String)).toList(),
       'alpha': alpha,
       'anchorU': anchorU,
       'anchorV': anchorV,

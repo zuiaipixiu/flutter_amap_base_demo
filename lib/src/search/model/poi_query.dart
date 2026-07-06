@@ -21,14 +21,14 @@ class Query {
   });
 
   Query.fromJson(Map<String, dynamic> json) {
-    a = json['a'] ;
-    c = json['c'] ;
-    d = json['d'] ;
-    e = json['e'] ;
-    f = json['f'] ;
-    g = json['g'] ;
-    h = json['h'] ;
-    j = json['j'] ;
+    a = json['a'] as String?;
+    c = json['c'] as String?;
+    d = json['d'] as int?;
+    e = json['e'] as int?;
+    f = json['f'] as String?;
+    g = json['g'] as bool?;
+    h = json['h'] as bool?;
+    j = json['j'] as bool?;
   }
 
   Map<String, dynamic> toJson() {

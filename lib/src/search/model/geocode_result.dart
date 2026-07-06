@@ -15,10 +15,10 @@ class GeocodeResult {
     if (json['geocodeAddressList'] != null) {
       geocodeAddressList = [];
       json['geocodeAddressList'].forEach((v) {
-        geocodeAddressList?.add(GeocodeAddressList.fromJson(v));
+        geocodeAddressList?.add(GeocodeAddressList.fromJson(v as Map<String, dynamic>));
       });
     }
-    geocodeQuery = json['geocodeQuery'] != null ? GeocodeQuery.fromJson(json['geocodeQuery']) : null;
+    geocodeQuery = json['geocodeQuery'] != null ? GeocodeQuery.fromJson(json['geocodeQuery'] as Map<String, dynamic>) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -80,16 +80,16 @@ class GeocodeAddressList {
   });
 
   GeocodeAddressList.fromJson(Map<String, dynamic> json) {
-    adcode = json['adcode'];
-    building = json['building'];
-    city = json['city'];
-    district = json['district'];
-    formatAddress = json['formatAddress'];
-    latLng = json['latLng'] != null ? LatLng.fromJson(json['latLng']) : null;
-    level = json['level'];
-    neighborhood = json['neighborhood'];
-    province = json['province'];
-    township = json['township'];
+    adcode = json['adcode'] as String?;
+    building = json['building'] as String?;
+    city = json['city'] as String?;
+    district = json['district'] as String?;
+    formatAddress = json['formatAddress'] as String?;
+    latLng = json['latLng'] != null ? LatLng.fromJson(json['latLng'] as Map<String, dynamic>) : null;
+    level = json['level'] as String?;
+    neighborhood = json['neighborhood'] as String?;
+    province = json['province'] as String?;
+    township = json['township'] as String?;
   }
 
   Map<String, dynamic> toJson() {
@@ -167,8 +167,8 @@ class GeocodeQuery {
   });
 
   GeocodeQuery.fromJson(Map<String, dynamic> json) {
-    city = json['city'];
-    locationName = json['locationName'];
+    city = json['city'] as String?;
+    locationName = json['locationName'] as String?;
   }
 
   Map<String, dynamic> toJson() {
