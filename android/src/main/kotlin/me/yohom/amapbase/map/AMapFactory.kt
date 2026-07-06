@@ -24,7 +24,10 @@ import me.yohom.amapbase.location.Init.locationClient
 import me.yohom.amapbase.navi.HeatMapActivity
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
-
+import me.yohom.amapbase.navi.CREATED
+import me.yohom.amapbase.navi.DESTROYED
+import me.yohom.amapbase.navi.RESUMED
+import me.yohom.amapbase.navi.STOPPED
 
 const val mapChannelName = "me.yohom/map"
 const val markerClickedChannelName = "me.yohom/marker_clicked"

@@ -467,7 +467,12 @@ class UnifiedPolylineOptions(
             isDottedLine = this@UnifiedPolylineOptions.isDottedLine
             geodesic(this@UnifiedPolylineOptions.isGeodesic)
             dottedLineType = this@UnifiedPolylineOptions.dottedLineType
-            setCustomTexture(UnifiedAssets.getBitmapDescriptor(this@UnifiedPolylineOptions.customTexture))
+            if (this@UnifiedPolylineOptions.isUseTexture &&
+                    this@UnifiedPolylineOptions.customTexture.isNotBlank()) {
+                setCustomTexture(
+                    UnifiedAssets.getBitmapDescriptor(this@UnifiedPolylineOptions.customTexture)
+                )
+            }
             lineCapType(when (this@UnifiedPolylineOptions.lineCapType) {
                 0 -> PolylineOptions.LineCapType.LineCapButt
                 1 -> PolylineOptions.LineCapType.LineCapSquare

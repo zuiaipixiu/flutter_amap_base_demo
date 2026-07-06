@@ -9,25 +9,25 @@ import com.amap.api.location.AMapLocationQualityReport
 class UnifiedAMapLocation(amapLocation: AMapLocation) {
     val gpsAccuracyStatus: Int = amapLocation.gpsAccuracyStatus
     val locationType: Int = amapLocation.locationType
-    val locationDetail: String = amapLocation.locationDetail
+    val locationDetail: String = amapLocation.locationDetail ?: ""
     val errorCode: Int = amapLocation.errorCode
-    val errorInfo: String = amapLocation.errorInfo
-    val country: String = amapLocation.country
-    val address: String = amapLocation.address
-    val province: String = amapLocation.province
-    val city: String = amapLocation.city
-    val district: String = amapLocation.district
-    val cityCode: String = amapLocation.cityCode
-    val adCode: String = amapLocation.adCode
-    val poiName: String = amapLocation.poiName
+    val errorInfo: String = amapLocation.errorInfo ?: ""
+    val country: String = amapLocation.country ?: ""
+    val address: String = amapLocation.address ?: ""
+    val province: String = amapLocation.province ?: ""
+    val city: String = amapLocation.city ?: ""
+    val district: String = amapLocation.district ?: ""
+    val cityCode: String = amapLocation.cityCode ?: ""
+    val adCode: String = amapLocation.adCode ?: ""
+    val poiName: String = amapLocation.poiName ?: ""
     val latitude: Double = amapLocation.latitude
     val longitude: Double = amapLocation.longitude
     val satellites: Int = amapLocation.satellites
-    val street: String = amapLocation.street
-    val streetNum: String = amapLocation.streetNum
+    val street: String = amapLocation.street ?: ""
+    val streetNum: String = amapLocation.streetNum ?: ""
     val isOffset: Boolean = amapLocation.isOffset
-    val aoiName: String = amapLocation.aoiName
-    val buildingId: String = amapLocation.buildingId
+    val aoiName: String = amapLocation.aoiName ?: ""
+    val buildingId: String = amapLocation.buildingId ?: ""
     val floor: Int = amapLocation.floor.toIntOrNull() ?: 0
     val isFixLastLocation: Boolean = amapLocation.isFixLastLocation
     val isMock: Boolean = amapLocation.isMock
@@ -36,8 +36,9 @@ class UnifiedAMapLocation(amapLocation: AMapLocation) {
     val altitude: Double = amapLocation.altitude
     val speed: Double = amapLocation.speed.toDouble()
     val provider: String? = amapLocation.provider
-    val locationQualityReport: UnifiedAMapLocationQualityReport = UnifiedAMapLocationQualityReport(amapLocation.locationQualityReport)
-    val coordType: String = amapLocation.coordType
+    val locationQualityReport: UnifiedAMapLocationQualityReport? =
+        amapLocation.locationQualityReport?.let { UnifiedAMapLocationQualityReport(it) }
+    val coordType: String = amapLocation.coordType ?: ""
     val trustedLevel: Int = amapLocation.trustedLevel
     val time: Long = amapLocation.time
 }
