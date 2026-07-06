@@ -10,6 +10,7 @@ import com.amap.api.navi.AmapNaviType
 import com.amap.api.navi.enums.PathPlanningStrategy
 import com.amap.api.navi.model.NaviLatLng
 import me.yohom.amapbase.navi.AMapNavOptions
+import me.yohom.amapbase.navi.NaviView
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import me.yohom.amapbase.AMapBasePlugin

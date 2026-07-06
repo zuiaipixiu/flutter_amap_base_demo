@@ -1,7 +1,6 @@
 library amap_base;
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -55,21 +54,28 @@ class AMap {
   static Future init(String key) async {
     await _channel.invokeMethod('setKey', {'key': key});
 
-    // 加载asset相关信息, 供区分图片分辨率用, 因为native端的加载asset方法无法区分分辨率, 这是一个变通方法
-    assetManifest = await rootBundle.loadStructuredData<Map<String, List<String>>>(
-      'AssetManifest.json',
-      (String? jsonData) {
-        if (jsonData == null) return SynchronousFuture<Map<String, List<String>>>({});
+    // 加载 asset 相关信息，供区分图片分辨率用（native 端无法区分分辨率）
+    assetManifest = await _loadAssetManifestMap();
+  }
 
-        final Map<String, dynamic> parsedJson = json.decode(jsonData);
-        final Iterable<String> keys = parsedJson.keys;
-        final Map<String, List<String>> parsedManifest = Map<String, List<String>>.fromIterables(
-          keys,
-          keys.map<List<String>>((key) => List<String>.from(parsedJson[key])),
-        );
-        return SynchronousFuture<Map<String, List<String>>>(parsedManifest);
-      },
-    );
+  /// 从 AssetManifest.bin 构建 {逻辑路径: [各分辨率路径]} 映射。
+  /// Flutter 3.x 已移除 AssetManifest.json，需使用官方 API。
+  static Future<Map<String, List<String>>> _loadAssetManifestMap() async {
+    try {
+      final AssetManifest manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      final Map<String, List<String>> result = <String, List<String>>{};
+      for (final String key in manifest.listAssets()) {
+        final List<AssetMetadata>? variants = manifest.getAssetVariants(key);
+        if (variants != null && variants.isNotEmpty) {
+          result[key] = variants.map((AssetMetadata v) => v.key).toList();
+        } else {
+          result[key] = <String>[key];
+        }
+      }
+      return result;
+    } catch (_) {
+      return <String, List<String>>{};
+    }
   }
 
   @Deprecated('使用init方法初始化的时候设置key')
