@@ -18,8 +18,6 @@ import com.amap.api.location.AMapLocationListener;
 
 import androidx.annotation.Nullable;
 
-import static me.yohom.amapbase.AMapBasePlugin.registrar;
-
 public class LocationService extends Service {
     @Nullable
     @Override
