@@ -56,26 +56,19 @@ class AMapView(context: Context,
     private val mapView = TextureMapView(context, amapOptions)
     private var mAMap: AMap? = null
     private var disposed = false
-    private var mapReleased = false
     private val registrarActivityHashCode: Int = AMapBasePlugin.registrar.activity().hashCode()
 
     override fun getView(): View = mapView
 
     override fun dispose() {
-        releaseMapResources()
-        registrar.activity()?.application?.unregisterActivityLifecycleCallbacks(this)
-    }
-
-    private fun releaseMapResources() {
-        if (mapReleased) {
+//        Log.d("dsm_flutter","amapfactory.kt dispose")
+        if (disposed) {
             return
         }
-        mapReleased = true
-        if (!disposed) {
-            disposed = true
-            mapView.onPause()
-            mapView.onDestroy()
-        }
+        disposed = true
+        mapView.onDestroy()
+
+        registrar.activity()?.application?.unregisterActivityLifecycleCallbacks(this)
     }
     private val STROKE_COLOR: Int = Color.argb(180, 3, 145, 255)
     private val FILL_COLOR: Int = Color.argb(10, 0, 0, 180)
@@ -110,11 +103,6 @@ class AMapView(context: Context,
         // 地图相关method channel
         val mapChannel = MethodChannel(registrar.messenger(), "$mapChannelName$id")
         mapChannel.setMethodCallHandler { call, result ->
-            if (call.method == "map#releaseView") {
-                releaseMapResources()
-                result.success(success)
-                return@setMethodCallHandler
-            }
             MAP_METHOD_HANDLER[call.method]
                     ?.with(mapView.map)
                     ?.onMethodCall(call, result) ?: result.notImplemented()
@@ -224,6 +212,7 @@ class AMapView(context: Context,
         dispose()
         savedMarkers.clear()
         locationClient.onDestroy()
+        mapView.onDestroy()
     }
 
 
