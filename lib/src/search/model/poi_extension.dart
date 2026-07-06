@@ -15,9 +15,9 @@ class PoiExtension {
   });
 
   PoiExtension.fromJson(Map<String, dynamic> json) {
-    opentime = json['opentime'];
-    rating = json['rating'];
-    cost = json['cost'] ?? 0.0;
+    opentime = json['opentime'] as String?;
+    rating = json['rating'] as String?;
+    cost = (json['cost'] as num?) ?? 0.0;
   }
 
   Map<String, dynamic> toJson() {

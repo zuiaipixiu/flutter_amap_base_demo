@@ -26,14 +26,14 @@ class City_iOS {
   });
 
   City_iOS.fromJson(Map<String, dynamic> json) {
-    city = json['city'];
-    citycode = json['citycode'];
-    adcode = json['adcode'];
-    num = json['num'];
+    city = json['city'] as String?;
+    citycode = json['citycode'] as String?;
+    adcode = json['adcode'] as String?;
+    num = json['num'] as int?;
     if (json['districts'] != null) {
       districts = [];
       json['districts'].forEach((v) {
-        districts?.add(District_iOS.fromJson(v));
+        districts?.add(District_iOS.fromJson(v as Map<String, dynamic>));
       });
     }
   }

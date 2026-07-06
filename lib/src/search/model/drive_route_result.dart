@@ -19,12 +19,12 @@ class DriveRouteResult {
     if (json['paths'] != null) {
       paths = [];
       json['paths'].forEach((v) {
-        paths?.add(DrivePath.fromJson(v));
+        paths?.add(DrivePath.fromJson(v as Map<String, dynamic>));
       });
     }
-    startPos = json['startPos'] != null ? LatLng.fromJson(json['startPos']) : null;
-    targetPos = json['targetPos'] != null ? LatLng.fromJson(json['targetPos']) : null;
-    taxiCost = json['taxiCost'];
+    startPos = json['startPos'] != null ? LatLng.fromJson(json['startPos'] as Map<String, dynamic>) : null;
+    targetPos = json['targetPos'] != null ? LatLng.fromJson(json['targetPos'] as Map<String, dynamic>) : null;
+    taxiCost = json['taxiCost'] as num?;
   }
 
   Map<String, dynamic> toJson() {
@@ -94,19 +94,19 @@ class DrivePath {
   });
 
   DrivePath.fromJson(Map<String, dynamic> json) {
-    restriction = json['restriction'];
+    restriction = json['restriction'] as num?;
     if (json['steps'] != null) {
       steps = [];
       json['steps'].forEach((v) {
-        steps?.add(Steps.fromJson(v));
+        steps?.add(Steps.fromJson(v as Map<String, dynamic>));
       });
     }
-    strategy = json['strategy'];
-    tollDistance = json['tollDistance'];
-    totalDuration = json['totalDuration'];
-    totalDistance = json['totalDistance'];
-    tolls = json['tolls'];
-    totalTrafficlights = json['totalTrafficlights'];
+    strategy = json['strategy'] as String?;
+    tollDistance = json['tollDistance'] as num?;
+    totalDuration = json['totalDuration'] as num?;
+    totalDistance = json['totalDistance'] as num?;
+    tolls = json['tolls'] as num?;
+    totalTrafficlights = json['totalTrafficlights'] as num?;
   }
 
   Map<String, dynamic> toJson() {
@@ -201,31 +201,31 @@ class Steps {
     if (json['TMCs'] != null) {
       TMCs = [];
       json['TMCs'].forEach((v) {
-        TMCs?.add(TMC.fromJson(v));
+        TMCs?.add(TMC.fromJson(v as Map<String, dynamic>));
       });
     }
-    action = json['action'];
-    assistantAction = json['assistantAction'];
-    distance = json['distance'];
-    duration = json['duration'];
-    instruction = json['instruction'];
-    orientation = json['orientation'];
+    action = json['action'] as String?;
+    assistantAction = json['assistantAction'] as String?;
+    distance = json['distance'] as num?;
+    duration = json['duration'] as num?;
+    instruction = json['instruction'] as String?;
+    orientation = json['orientation'] as String?;
     if (json['polyline'] != null) {
       polyline = [];
       json['polyline'].forEach((v) {
-        polyline?.add(LatLng.fromJson(v));
+        polyline?.add(LatLng.fromJson(v as Map<String, dynamic>));
       });
     }
-    road = json['road'];
+    road = json['road'] as String?;
     if (json['routeSearchCityList'] != null) {
       routeSearchCityList = [];
       json['routeSearchCityList'].forEach((v) {
-        routeSearchCityList?.add(RouteSearchCityList.fromJson(v));
+        routeSearchCityList?.add(RouteSearchCityList.fromJson(v as Map<String, dynamic>));
       });
     }
-    tollDistance = json['tollDistance'];
-    tollRoad = json['tollRoad'];
-    tolls = json['tolls'];
+    tollDistance = json['tollDistance'] as num?;
+    tollRoad = json['tollRoad'] as String?;
+    tolls = json['tolls'] as num?;
   }
 
   Map<String, dynamic> toJson() {
@@ -322,14 +322,14 @@ class TMC {
   });
 
   TMC.fromJson(Map<String, dynamic> json) {
-    distance = json['distance'];
+    distance = json['distance'] as num?;
     if (json['polyline'] != null) {
       polyline = [];
       json['polyline'].forEach((v) {
-        polyline?.add(LatLng.fromJson(v));
+        polyline?.add(LatLng.fromJson(v as Map<String, dynamic>));
       });
     }
-    status = json['status'];
+    status = json['status'] as String?;
   }
 
   Map<String, dynamic> toJson() {
@@ -380,7 +380,7 @@ class RouteSearchCityList {
     if (json['districts'] != null) {
       districts = [];
       json['districts'].forEach((v) {
-        districts?.add(Districts.fromJson(v));
+        districts?.add(Districts.fromJson(v as Map<String, dynamic>));
       });
     }
   }
@@ -424,8 +424,8 @@ class Districts {
   });
 
   Districts.fromJson(Map<String, dynamic> json) {
-    districtAdcode = json['districtAdcode'];
-    districtName = json['districtName'];
+    districtAdcode = json['districtAdcode'] as String?;
+    districtName = json['districtName'] as String?;
   }
 
   Map<String, dynamic> toJson() {

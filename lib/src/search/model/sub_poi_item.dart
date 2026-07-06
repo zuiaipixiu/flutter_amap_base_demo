@@ -23,13 +23,13 @@ class SubPoiItem {
   String? subTypeDes;
 
   SubPoiItem.fromJson(Map<String, dynamic> json) {
-    poiId = json['poiId'];
-    title = json['title'];
-    subName = json['subName'];
-    distance = json['distance'];
-    latLonPoint = LatLng.fromJson(json['latLonPoint']);
-    snippet = json['snippet'];
-    subTypeDes = json['subTypeDes'];
+    poiId = json['poiId'] as String?;
+    title = json['title'] as String?;
+    subName = json['subName'] as String?;
+    distance = json['distance'] as int?;
+    latLonPoint = LatLng.fromJson(json['latLonPoint'] as Map<String, dynamic>);
+    snippet = json['snippet'] as String?;
+    subTypeDes = json['subTypeDes'] as String?;
   }
 
   Map<String, dynamic> toJson() {

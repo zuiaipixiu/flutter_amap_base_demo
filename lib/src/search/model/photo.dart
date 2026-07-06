@@ -11,8 +11,8 @@ class Photo {
   });
 
   Photo.fromJson(Map<String, dynamic> json) {
-    title = json['title'] ;
-    url = json['url'] ;
+    title = json['title'] as String?;
+    url = json['url'] as String?;
   }
 
   Map<String, dynamic> toJson() {

@@ -15,9 +15,9 @@ class IndoorData {
   });
 
   IndoorData.fromJson(Map<String, dynamic> json) {
-    floor = json['floor'];
-    floorName = json['floorName'];
-    poiId = json['poiId'];
+    floor = json['floor'] as int?;
+    floorName = json['floorName'] as String?;
+    poiId = json['poiId'] as String?;
   }
 
   Map<String, dynamic> toJson() {

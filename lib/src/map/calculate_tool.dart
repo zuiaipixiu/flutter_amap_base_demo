@@ -33,7 +33,7 @@ class CalculateTools {
   }) async {
     int intType = LatLngType.values.indexOf(type);
 
-    String result = await _channel.invokeMethod(
+    final dynamic methodResult = await _channel.invokeMethod(
       'tool#convertCoordinate',
       {
         'lat': lat,
@@ -42,11 +42,11 @@ class CalculateTools {
       },
     );
 
-    if (result == null) {
+    if (methodResult == null) {
       return null;
     }
 
-    return LatLng.fromJson(jsonDecode(result));
+    return LatLng.fromJson(jsonDecode(methodResult as String) as Map<String, dynamic>);
   }
 
   Future<double> calcDistance(LatLng latLng1, LatLng latLng2) async {
@@ -55,7 +55,7 @@ class CalculateTools {
       "p2": latLng2.toJson(),
     };
 
-    double length = await _channel.invokeMethod("tool#calcDistance", params);
+    final double length = await _channel.invokeMethod("tool#calcDistance", params) as double;
     return length;
   }
 }

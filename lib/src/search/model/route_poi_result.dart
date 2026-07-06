@@ -10,10 +10,10 @@ class RoutePoiResult {
     if (json['routePoiList'] != null) {
       routePoiList = [];
       json['routePoiList'].forEach((v) {
-        routePoiList?.add(RoutePoiItem.fromJson(v));
+        routePoiList?.add(RoutePoiItem.fromJson(v as Map<String, dynamic>));
       });
     }
-    query = json['query'];
+    query = json['query'] as Map?;
   }
 
   Map<String, dynamic> toJson() {
@@ -37,11 +37,11 @@ class RoutePoiItem {
   num? duration;
 
   RoutePoiItem.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    title = json['title'];
-    point = LatLng.fromJson(json['point']);
-    distance = json['distance'];
-    duration = json['duration'];
+    id = json['id'] as String?;
+    title = json['title'] as String?;
+    point = LatLng.fromJson(json['point'] as Map<String, dynamic>);
+    distance = json['distance'] as num?;
+    duration = json['duration'] as num?;
   }
 
   Map<String, dynamic> toJson() {

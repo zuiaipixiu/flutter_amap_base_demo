@@ -16,12 +16,12 @@ class BusStationResult_iOS {
   });
 
   BusStationResult_iOS.fromJson(Map<String, dynamic> json) {
-    count = json['count'];
-    suggestion = json['suggestion'] != null ? Suggestion.fromJson(json['suggestion']) : null;
+    count = json['count'] as int?;
+    suggestion = json['suggestion'] != null ? Suggestion.fromJson(json['suggestion'] as Map<String, dynamic>) : null;
     if (json['busstops'] != null) {
       busstops = [];
       json['busstops'].forEach((v) {
-        busstops?.add(Busstops.fromJson(v));
+        busstops?.add(Busstops.fromJson(v as Map<String, dynamic>));
       });
     }
   }
@@ -75,13 +75,13 @@ class Suggestion {
     if (json['cities'] != null) {
       cities = [];
       json['cities'].forEach((v) {
-        cities?.add(City_iOS.fromJson(v));
+        cities?.add(City_iOS.fromJson(v as Map<String, dynamic>));
       });
     }
     if (json['keywords'] != null) {
       keywords = [];
       json['keywords'].forEach((v) {
-        keywords?.add(v);
+        keywords?.add(v as String);
       });
     }
   }
@@ -139,18 +139,18 @@ class Busstops {
   });
 
   Busstops.fromJson(Map<String, dynamic> json) {
-    location = json['location'] != null ? LatLng.fromJson(json['location']) : null;
-    uid = json['uid'];
-    sequence = json['sequence'];
-    adcode = json['adcode'];
-    citycode = json['citycode'];
+    location = json['location'] != null ? LatLng.fromJson(json['location'] as Map<String, dynamic>) : null;
+    uid = json['uid'] as String?;
+    sequence = json['sequence'] as String?;
+    adcode = json['adcode'] as String?;
+    citycode = json['citycode'] as String?;
     if (json['buslines'] != null) {
       buslines = [];
       json['buslines'].forEach((v) {
-        buslines?.add(Busline.fromJson(v));
+        buslines?.add(Busline.fromJson(v as Map<String, dynamic>));
       });
     }
-    name = json['name'];
+    name = json['name'] as String?;
   }
 
   Map<String, dynamic> toJson() {
@@ -237,21 +237,21 @@ class Busline {
   });
 
   Busline.fromJson(Map<String, dynamic> json) {
-    totalPrice = json['totalPrice'];
-    uid = json['uid'];
-    endStop = json['endStop'];
-    company = json['company'];
-    type = json['type'];
-    location = json['location'] != null ? LatLng.fromJson(json['location']) : null;
-    endTime = json['endTime'];
-    citycode = json['citycode'];
-    polyline = json['polyline'];
-    startStop = json['startStop'];
-    duration = json['duration'];
-    distance = json['distance'];
-    startTime = json['startTime'];
-    name = json['name'];
-    basicPrice = json['basicPrice'];
+    totalPrice = json['totalPrice'] as int?;
+    uid = json['uid'] as String?;
+    endStop = json['endStop'] as String?;
+    company = json['company'] as String?;
+    type = json['type'] as String?;
+    location = json['location'] != null ? LatLng.fromJson(json['location'] as Map<String, dynamic>) : null;
+    endTime = json['endTime'] as String?;
+    citycode = json['citycode'] as String?;
+    polyline = json['polyline'] as String?;
+    startStop = json['startStop'] as String?;
+    duration = json['duration'] as int?;
+    distance = json['distance'] as int?;
+    startTime = json['startTime'] as String?;
+    name = json['name'] as String?;
+    basicPrice = json['basicPrice'] as int?;
   }
 
   Map<String, dynamic> toJson() {

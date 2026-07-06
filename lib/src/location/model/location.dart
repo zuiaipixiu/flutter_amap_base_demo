@@ -72,39 +72,39 @@ class Location {
   });
 
   Location.fromJson(Map<String, dynamic> json) {
-    accuracy = json['accuracy'];
-    adCode = json['adCode'];
-    address = json['address'];
-    altitude = json['altitude'];
-    aoiName = json['aoiName'];
-    bearing = json['bearing'];
-    buildingId = json['buildingId'];
-    city = json['city'];
-    cityCode = json['cityCode'];
-    coordType = json['coordType'];
-    country = json['country'];
-    district = json['district'];
-    errorCode = json['errorCode'];
-    errorInfo = json['errorInfo'];
-    floor = json['floor'];
-    gpsAccuracyStatus = json['gpsAccuracyStatus'];
-    isFixLastLocation = json['isFixLastLocation'];
-    isMock = json['isMock'];
-    isOffset = json['isOffset'];
-    latitude = json['latitude'];
-    locationDetail = json['locationDetail'];
-    locationQualityReport = json['locationQualityReport'] != null ? LocationQualityReport.fromJson(json['locationQualityReport']) : null;
-    locationType = json['locationType'];
-    longitude = json['longitude'];
-    poiName = json['poiName'];
-    provider = json['provider'];
-    province = json['province'];
-    satellites = json['satellites'];
-    speed = json['speed'];
-    street = json['street'];
-    streetNum = json['streetNum'];
-    trustedLevel = json['trustedLevel'];
-    time = json['time'];
+    accuracy = json['accuracy'] as num?;
+    adCode = json['adCode'] as String?;
+    address = json['address'] as String?;
+    altitude = json['altitude'] as num?;
+    aoiName = json['aoiName'] as String?;
+    bearing = json['bearing'] as num?;
+    buildingId = json['buildingId'] as String?;
+    city = json['city'] as String?;
+    cityCode = json['cityCode'] as String?;
+    coordType = json['coordType'] as String?;
+    country = json['country'] as String?;
+    district = json['district'] as String?;
+    errorCode = json['errorCode'] as num?;
+    errorInfo = json['errorInfo'] as String?;
+    floor = json['floor'] as int?;
+    gpsAccuracyStatus = json['gpsAccuracyStatus'] as num?;
+    isFixLastLocation = json['isFixLastLocation'] as bool?;
+    isMock = json['isMock'] as bool?;
+    isOffset = json['isOffset'] as bool?;
+    latitude = json['latitude'] as num?;
+    locationDetail = json['locationDetail'] as String?;
+    locationQualityReport = json['locationQualityReport'] != null ? LocationQualityReport.fromJson(json['locationQualityReport'] as Map<String, dynamic>) : null;
+    locationType = json['locationType'] as num?;
+    longitude = json['longitude'] as num?;
+    poiName = json['poiName'] as String?;
+    provider = json['provider'] as String?;
+    province = json['province'] as String?;
+    satellites = json['satellites'] as num?;
+    speed = json['speed'] as num?;
+    street = json['street'] as String?;
+    streetNum = json['streetNum'] as String?;
+    trustedLevel = json['trustedLevel'] as num?;
+    time = json['time'] as num?;
   }
 
   Map<String, dynamic> toJson() {
@@ -282,12 +282,12 @@ class LocationQualityReport {
   });
 
   LocationQualityReport.fromJson(Map<String, dynamic> json) {
-    adviseMessage = json['adviseMessage'];
-    gpsSatellites = json['gpsSatellites'];
-    gpsStatus = json['gpsStatus'];
-    isWifiAble = json['isWifiAble'];
-    netUseTime = json['netUseTime'];
-    networkType = json['networkType'];
+    adviseMessage = json['adviseMessage'] as String?;
+    gpsSatellites = json['gpsSatellites'] as num?;
+    gpsStatus = json['gpsStatus'] as num?;
+    isWifiAble = json['isWifiAble'] as bool?;
+    netUseTime = json['netUseTime'] as num?;
+    networkType = json['networkType'] as String?;
   }
 
   Map<String, dynamic> toJson() {
